@@ -1,6 +1,6 @@
 {
   "name": "evolve-coach",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,8 +15,6 @@
     "react-dom": "^19.1.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.57.0",
-    "ai": "^5.0.0",
-    "@ai-sdk/openai": "^2.0.0",
     "lucide-react": "^0.468.0",
     "zod": "^4.0.0"
   },
