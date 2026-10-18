@@ -1,0 +1,12 @@
+EVOLVE – PATCH HOMEPAGE E IMMAGINI
+
+1. Fai una copia della cartella locale evolve prima di estrarre.
+2. Estrai nella cartella principale C:\Users\PC\Desktop\evolve e sovrascrivi.
+3. NON cancellare .git e NON incollare file del proxy Aruba nel repository.
+4. Esegui npm install && npm run build.
+5. Se la build riesce: git add -A && git commit -m "Fix immagini Evolve sotto /evolve" && git push origin main.
+6. Su Vercel controlla https://evolve-roan.vercel.app/evolve e le immagini.
+7. Solo poi testa https://danilorusciano.it/evolve dopo aver aggiornato il proxy Aruba.
+
+Modifiche: src/app/page.tsx e src/components/shell.tsx ora usano /evolve/brand e /evolve/icons.
+Il file next.config.ts contiene gia basePath /evolve.
