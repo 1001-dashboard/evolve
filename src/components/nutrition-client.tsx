@@ -31,7 +31,7 @@ export function NutritionClient() {
     setError('');setResult('');setSaved(false);setLoading(true);
     try {
       const payload=mode==='ingredients'?{mode,ingredients,preferences}:{mode,image:photo?.data,mimeType:photo?.mimeType,details};
-      const response=await fetch('/api/nutrition',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const response=await fetch('/evolve/api/nutrition',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const data=await response.json();if(!response.ok) throw new Error(data.error||'Errore durante l’analisi');
       setResult(data.answer);
     } catch(e) {setError(e instanceof Error?e.message:'Analisi non riuscita');}
@@ -41,7 +41,7 @@ export function NutritionClient() {
     if(!result)return;
     setSaving(true);setError('');
     try {
-      const res=await fetch('/api/diary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'nutrition',note:`${mode==='photo'?'Stima indicativa da foto':'Suggerimenti ricette'}\n${result}`.slice(0,2500)})});
+      const res=await fetch('/evolve/api/diary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'nutrition',note:`${mode==='photo'?'Stima indicativa da foto':'Suggerimenti ricette'}\n${result}`.slice(0,2500)})});
       if(!res.ok) throw Error('Non è stato possibile salvare nel diario');setSaved(true);router.refresh();
     }catch(e){setError(e instanceof Error?e.message:'Errore salvataggio');}finally{setSaving(false);}
   }

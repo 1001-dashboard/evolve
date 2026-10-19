@@ -1,111 +1,99 @@
-# Evolve 0.2 — Coach personale AI
+# Evolve v0.4 — Personal Change Engine
 
-Progetto Next.js + Supabase + Gemini API. Interfaccia in italiano con asset derivati dal kit grafico fornito. **MVP privato, non un prodotto clinico né pronto per un lancio pubblico.**
+## Che cosa cambia
 
-## Stato delle funzionalità
+Evolve non e' piu' centrato sulla conversazione con un pseudo-coach.
+Il cuore e' un *motore di percorsi*:
 
-- Homepage italiana responsive con presentazione del prodotto.
-- Account email/password tramite Supabase Auth.
-- Dashboard Oggi con contatori basati sui dati salvati, accesso a Coach, Azioni e Diario.
-- Coach con API Gemini REST lato server e cronologia Supabase.
-- Creazione di azioni concordate e revisione collegata al diario.
-- Diario per umore, alimentazione, alcol, concentrazione e riflessioni.
-- Progressi: conteggi effettivi e rapporto delle azioni completate.
-- Menu desktop/mobile, immagini brand, layout migliorato, elementi con focus accessibile.
+1. Scegli un ambito e descrivi in breve l'obiettivo.
+2. Visualizzi l'esercizio di oggi con una versione piu' facile se necessario.
+3. Confermi **Fatto / Troppo difficile / Non oggi**, con nota facoltativa.
+4. La piattaforma conserva i risultati in Supabase e adatta la difficolta' dopo esiti ripetuti.
+5. Routine e progressi mostrano azioni reali, non valutazioni inventate dall'AI.
 
-**Non ancora disponibili:** notifiche proattive, onboarding completo, suggerimenti di azione strutturati automaticamente dal modello, cancellazione account/dati dalla UI, rate limit distribuito, trattamento avanzato dati sanitari, consenso GDPR dedicato, integrazione calendario, test end-to-end e PWA offline. La chat attuale restituisce la risposta completa anziché streaming token per token.
+Percorsi inclusi: benessere/peso, rapporto con l'alcol (solo auto-osservazione e alternative non cliniche), lingue, leadership/operations, cambiamento/trasferimento, abitudine generica. Quattro livelli con varianti di esercizi. Vengono mantenuti login, diario, alimentazione, azioni e coach di supporto.
 
-## Prima installazione
+## Correzione del 404 su Vercel e Aruba
 
-1. Crea un progetto su https://supabase.com/dashboard e conserva la password del database.
-2. Apri **SQL Editor** e incolla il contenuto di `supabase/migrations/202610170001_init.sql`, poi clicca **Run** (una sola volta su un progetto nuovo).
-3. In **Authentication > Providers > Email**, abilita Email; lascia la conferma email attiva per sicurezza.
-4. In **Project Settings > API Keys** copia la publishable/anon key, e in **Project Settings > API** copia l'URL progetto. Non usare la chiave `service_role`.
-5. In https://aistudio.google.com/apikey crea una chiave Gemini. Verifica il modello disponibile e la quota del tuo account sul portale ufficiale.
-6. Rinomina `.env.example` in `.env.local`, poi inserisci:
+Nel repository GitHub pubblicato il 19 ottobre 2026, `next.config.ts` era vuoto (`const nextConfig = {}`). Poiche' il proxy Aruba inoltra a `/evolve`, Vercel restituiva 404 anche direttamente.
 
-```dotenv
-NEXT_PUBLIC_SUPABASE_URL=https://NOME-PROGETTO.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=LA_TUA_CHIAVE_PUBLISHABLE
-GEMINI_API_KEY=LA_TUA_CHIAVE_PRIVATA
-GEMINI_MODEL=gemini-3.5-flash-lite
+Questo archivio contiene:
+
+```ts
+const nextConfig: NextConfig = {
+  basePath: '/evolve',
+  trailingSlash: false,
+  images: { unoptimized: true },
+};
 ```
 
-Se il modello predefinito non è disponibile sul tuo account, sostituisci `GEMINI_MODEL` con un identificativo effettivamente abilitato con quota gratuita nel tuo AI Studio. Non aggiungere un metodo di pagamento senza prima verificare condizioni e costi.
+Le immagini pubbliche usano `/evolve/brand/...` e `/evolve/icons/...`; le chiamate fetch usano `/evolve/api/...`. `next/link` e `next/navigation` aggiungono automaticamente basePath ai percorsi interni.
 
-7. Installa Node.js 22 LTS o successivo, poi da terminale nella cartella progetto:
+**IMPORTANTE:** non basta caricare il file su Aruba. L'app Next.js deve essere pubblicata nuovamente su Vercel dal repository GitHub. Se il proxy Aruba attuale raggiunge Vercel e restituisce una pagina Next.js 404, lascialo invariato per la prima prova.
 
-```bash
+## Aggiornare il codice (senza perdere il repository Git)
+
+1. Fai una copia di sicurezza della cartella locale del repository `evolve`.
+2. Estrai **il contenuto** di questo ZIP nella cartella che contiene gia' `package.json` e `.git`. Sovrascrivi i file con lo stesso nome; non cancellare `.git` o `.env.local`.
+3. Nell'archivio v0.4 non e' presente `src/middleware.ts` per evitare comportamenti imprevisti durante il test di instradamento. Se nella tua cartella locale e' rimasto un vecchio `src/middleware.ts`, rimuovilo *solo dal progetto locale da pubblicare* (fai prima una copia). L'accesso Supabase continuera' a essere controllato dalle route protette.
+4. Apri un terminale **nella cartella `evolve`**, poi:
+
+```powershell
 npm install
-npm run typecheck
-npm run dev
+npm run build
 ```
 
-Apri http://localhost:3000. Se `npm run typecheck` o `npm run build` falliscono, risolvi gli errori prima di procedere.
+Solo se la build termina senza errori:
 
-## GitHub: push manuale guidato
-
-1. Vai su https://github.com/new e crea un repository **privato** `evolve` e scegli **Create repository** senza inizializzare README o .gitignore.
-2. Estrai lo ZIP. Apri il terminale *nella cartella che contiene `package.json`*.
-3. Esegui uno per volta:
-
-```bash
-git init
-git add .
-git commit -m "Evolve v0.2 UI italiana e Gemini"
-git branch -M main
-git remote add origin https://github.com/TUO_USERNAME/evolve.git
-git push -u origin main
+```powershell
+git add -A
+git commit -m "Evolve v0.4 percorsi routine e basePath"
+git push origin main
 ```
 
-Sostituisci `TUO_USERNAME`. GitHub può chiederti di autenticarti con browser o Git Credential Manager. Se `git` non è installato, installa Git for Windows. **Prima del push controlla che `.env.local` non sia in Git**: `git status --short` e `git ls-files | findstr env` (Windows). `.env.example` è sicuro perché contiene segnaposto.
+5. Aspetta che su Vercel il nuovo deployment risulti **Ready**. Il progetto deve avere Framework **Next.js**, Root Directory `./`, Build Command Default o `npm run build`, Output Directory Default. Non modificare le 4 variabili Supabase/Gemini gia' impostate.
+6. Verifica **prima Vercel**, poi il dominio Aruba:
 
-## Vercel: collegamento a GitHub
+```cmd
+curl.exe -L -s -o NUL -w "HTTP: %{http_code}\n" https://evolve-roan.vercel.app/evolve
+curl.exe -L -s -o NUL -w "HTTP: %{http_code}\n" https://danilorusciano.it/evolve
+```
 
-1. Vai su https://vercel.com/new, collega GitHub se necessario.
-2. **Import** il repository `evolve`.
-3. Framework **Next.js**; root directory `./`.
-4. In **Environment Variables**, imposta le quattro variabili dell'esempio con i tuoi valori reali, su Production (eventualmente anche Preview/Development).
-5. Premi **Deploy**. Controlla i Build Logs. Se il build fallisce, non considerare il deployment riuscito.
-6. Copia l'URL `https://nome-progetto.vercel.app` risultante.
+Ci aspettiamo `HTTP: 200` sulla pagina pubblica, poi `https://danilorusciano.it/evolve/login`.
+Una build `Ready` non garantisce che l'alias Vercel punti al deployment giusto: se la prima verifica continua a mostrare 404, controlla **Vercel → Deployments → ultimo deployment → Domains** e assicurati che `evolve-roan.vercel.app` sia assegnato al deployment nuovo.
 
-## Supabase: configurazione URL
+## Supabase — indispensabile per la nuova funzionalita'
 
-1. Supabase > Authentication > URL Configuration.
-2. Imposta **Site URL** al dominio Vercel.
-3. Aggiungi nelle **Redirect URLs** il dominio Vercel e per sviluppo `http://localhost:3000/**` se necessario.
-4. Verifica la mail di iscrizione, accedi, usa Coach, crea un'azione, completa un'azione e aggiungi la riflessione nel diario.
+Dopo aver messo in salvo i dati e prima di utilizzare Percorsi e Routine:
 
-## Controlli funzionali consigliati
+1. Apri Supabase del progetto Evolve → SQL Editor → New query.
+2. Incolla *solo* `supabase/migrations/202610190001_change_engine.sql` e premi Run **una volta**.
+3. Non rieseguire la migrazione iniziale del 17 ottobre su un database gia' popolato.
+4. Le nuove tabelle sono `evolve_programs` e `evolve_checkins` con RLS per utente. Non vengono eliminati gli account, le azioni, le note, le sessioni o altri dati esistenti.
 
-- Prova smartphone e desktop; usa tastiera per tabulare su input, menu e bottoni.
-- Prova login, logout, refresh e permanenza dei dati.
-- Prova un secondo utente: non deve visualizzare i dati del primo.
-- Invia un messaggio Coach e controlla la risposta, anche dopo refresh.
-- Verifica errore se Gemini key non è configurata e il messaggio di limite per codice 429.
-- Controlla Vercel Logs se una chiamata fallisce.
-- Controlla eventuali avvisi e query in Supabase.
+Se non esegui SQL, l'homepage e le vecchie sezioni possono ancora funzionare, ma Percorsi e Routine mostrano un avviso e non salvano.
 
-## Privacy: attenzione alla quota AI gratuita
+## Test funzionali
 
-Google dichiara che sul tier Gemini gratuito i contenuti possono essere usati per migliorare i suoi prodotti. Evolve invia la chat e un breve riepilogo di titoli azione/obiettivi, **non allega in automatico le note del diario**, ma se inserisci dati personali sensibili nella chat li trasmetterà comunque. Per questo non raccomandiamo il tier gratuito per dati sanitari identificabili o utilizzo pubblico. Prima di ampliarlo servono privacy review, informativa, consensi quando richiesti, gestione cancellazione/esportazione e configurazione API con tutela dei dati adeguata. Non inserire documenti clinici, nomi, indirizzi, dettagli medici o altre informazioni sensibili nei test.
+- Pagina pubblica `/evolve`: deve mostrare la landing, logo e immagini.
+- `/evolve/login`: login Supabase; poi `/evolve/oggi`.
+- `/evolve/percorsi`: crea un percorso “Spagnolo al lavoro”.
+- `/evolve/routine`: visualizza la missione e segna “Fatto”.
+- Ricarica: deve essere rimasta registrata su Supabase.
+- `/evolve/progressi`: mostra il check-in.
+- Prova mettere in pausa, riattivare, cambiare percorso; prova smartphone.
+- Prova `/evolve/alimentazione`, `/evolve/diario`, `/evolve/coach`: le vecchie API sono ora chiamate con `/evolve/api/...`.
+- Controlla con un secondo account che i dati del primo non siano visibili.
 
-## Limiti verifica
+## Limiti di questa versione
 
-Questo archivio è stato verificato a livello di struttura/file e controlli statici locali. In questo ambiente non è stato possibile completare `npm install` e una build end-to-end, né connettere effettivamente Vercel, Supabase e Gemini, che richiedono le credenziali e i servizi dell'utente.
+- I percorsi sono **modelli predefiniti personalizzati in base ai risultati**, non un piano clinico, e non costruiscono ancora automaticamente nuovi esercizi con Gemini.
+- Un solo check-in per percorso per data (Europe/Rome), modificabile nello stesso giorno.
+- La difficolta' aumenta dopo 3 completamenti consecutivi nello stesso livello. Due check-in consecutivi “Troppo difficile” possono ridurla; “Non oggi” non causa una penalizzazione.
+- Non sono implementati notifiche, promemoria automatici, test end-to-end o backup automatici.
+- In caso di consumo elevato/quotidiano di alcol, una riduzione autonoma e rapida puo' causare astinenza pericolosa. L'app **non** prescrive quantita' da ridurre. Serve una valutazione medica.
+- Per privacy, evita dettagli sanitari sensibili sul tier Gemini gratuito. Dati dei percorsi e check-in sono conservati sul tuo Supabase; non vengono automaticamente inviati al modello.
 
+## Verifiche effettuate nella preparazione ZIP
 
-## Novità v0.3 — Alimentazione e correzione compilazione
-
-- Server Supabase con cookie tipizzati; fix TypeScript.
-- Sezione **Alimentazione**: ricette da ingredienti e stima **indicativa** da foto tramite Gemini multimodale, con consenso esplicito.
-- Foto non archiviate nell’app o nel database; il provider riceve la foto per l’analisi.
-- I risultati vengono salvati nel diario solo su richiesta.
-- Il modello predefinito è configurabile via `GEMINI_MODEL`; verifica l’effettiva disponibilità gratuita su Google AI Studio.
-- Immagini JPEG/PNG/WebP fino a 3,5 MB; possibili limitazioni Vercel sul body HTTP.
-- Le kcal stimate sono **intervalli orientativi**, non misure attendibili per una dieta clinica.
-- In produzione, per dati sanitari o sensibili, rivalutare l’utilizzo della quota gratuita del provider e completare una valutazione privacy.
-
-**Aggiornamento di un progetto esistente:** sostituisci i file con quelli dello ZIP (non cancellare `.git`), esegui `npm install`, `npm run build`, poi `git add . && git commit -m "Evolve v0.3" && git push origin main`.
-
-**Nessuna nuova tabella SQL** è richiesta: la funzione Salva nel diario usa `diary_entries` già esistente.
+Controllata la struttura dell'archivio, il `basePath`, i percorsi relativi degli asset, il prefisso delle API, e la sintassi di tutti i file TypeScript/TSX con il compilatore TypeScript. **Non e' stato possibile completare una build `npm run build` nell'ambiente di preparazione** per indisponibilita' della rete npm. Esegui la compilazione sul PC prima del push e non pubblicare in caso di errori.

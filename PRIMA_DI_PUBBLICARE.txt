@@ -1,0 +1,22 @@
+EVOLVE v0.4 — CAMBIAMENTO GRADUALE + FIX 404
+
+1) COPIA la cartella locale di evolve per sicurezza.
+2) ESTRAI QUESTO ZIP NELLA CARTELLA DEL REPO (quella con package.json e .git), sovrascrivendo i file. Non eliminare .git o .env.local.
+3) Su Supabase: SQL Editor -> esegui UNA VOLTA:
+   supabase/migrations/202610190001_change_engine.sql
+4) Se hai ancora il vecchio src/middleware.ts nel repository locale, creane una copia e rimuovilo (non e' incluso nello ZIP v0.4).
+5) Nel terminale aperto dentro il repo:
+   npm install
+   npm run build
+   git add -A
+   git commit -m "Evolve v0.4 change engine fix basePath"
+   git push origin main
+6) Aspetta Vercel Ready. Prova PRIMA:
+   https://evolve-roan.vercel.app/evolve
+   Poi:
+   https://danilorusciano.it/evolve
+7) Se Vercel mostra ancora 404, controlla quale DEPLOYMENT e' assegnato al dominio evolve-roan.vercel.app.
+8) Se Vercel e' 200 ma Aruba e' 404, usa lo ZIP Aruba separato solo se il proxy attuale non funziona.
+9) ELIMINA dal server Aruba i vecchi file di test (probe.php / test-evolve.php).
+
+VEDI README.md per dettagli, sicurezza e limiti.
