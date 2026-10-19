@@ -1,115 +1,62 @@
-# Evolve v0.5 — Esperienza guidata e logo robusto
+# Evolve v0.7 — Adaptive Life Coaching
 
-**Aggiornamento della versione v0.4 già funzionante.** La configurazione `/evolve` e la migrazione Supabase rimangono inalterate.
+Una base applicativa Next.js 15 / Supabase / Gemini per sostenere miglioramenti concreti nella vita quotidiana. L'obiettivo non è una chat motivazionale: il prodotto combina un profilo personale, attività piccole e verificabili, scenari preparatori e percorsi già presenti nelle versioni v0.4–v0.6.
 
-- Logo originale importato come asset statico compilato, con fallback leggibile in caso di errore di caricamento.
-- I percorsi hanno istruzioni concrete in **tre passaggi**, esempi espandibili, campi coerenti con la categoria ed una versione breve per le giornate difficili.
-- Le risposte finiscono nel campo `note` della tabella `evolve_checkins`; nessuna nuova tabella o migrazione.
-- I progressi di riepilogo sono ora dopo la scheda dell'esercizio, non prima: la priorità è l'azione.
-- Stati `Fatto`, `Troppo difficile` e `Non oggi` rimangono, con correzione della registrazione giornaliera già possibile.
-- La navigazione evidenzia la pagina attiva; CSS e layout mobile sono stati migliorati.
-- Test locali disponibili: `npm run test:ux` (dopo `npm install`); vedi `TEST_REPORT_v05.md`.
+## Novità v0.7
 
-**Installazione rapida:** leggi `LEGGIMI_PRIMA_v05.txt`. La sezione seguente descrive la base v0.4 e rimane per documentare database e API.
+- **Profilo centrale (`/profilo`)**: nome, obiettivo, aree di vita, tempo quotidiano, stile di accompagnamento, abitudine-ancora, contesto; altezza, peso e data di nascita facoltativi. Modificabile e privato.
+- **Check-in quotidiano (`/giornata`)**: energia, stato mentale percepito, tempo disponibile, sonno e nota facoltativa. La scala non è uno strumento diagnostico.
+- **Daily Life Planner (`/giornata`)**: fino a tre azioni, con priorità iniziale, attività da un percorso pianificato compatibilmente col budget e prova di uno scenario «se-allora»; riduce il carico opzionale nelle giornate difficili. La mini-routine richiede di registrare un'azione concreta, non solo una spunta.
+- **Scenario Engine (`/scenari`)**: modelli e scenari personalizzati per trasferimento, difficoltà linguistiche, lavoro, famiglia, benessere. Crea, modifica, metti in pausa, prova, registra feedback, elimina.
+- **Coaching AI con consenso sul contesto**: i dati generali del profilo sono disponibili al coach Gemini **solo dopo opt-in** esplicito, disattivato per impostazione predefinita. I campi sanitari e i check-in non vengono inseriti automaticamente nel prompt.
+- **Compatibilità**: mantiene `basePath:'/evolve'`, logo della v0.5, autenticazione, percorsi, pianificazione v0.6, alimentazione, diario e azioni.
 
----
+## Avvio e deployment
 
-# Evolve v0.4 — Personal Change Engine
-
-## Che cosa cambia
-
-Evolve non e' piu' centrato sulla conversazione con un pseudo-coach.
-Il cuore e' un *motore di percorsi*:
-
-1. Scegli un ambito e descrivi in breve l'obiettivo.
-2. Visualizzi l'esercizio di oggi con una versione piu' facile se necessario.
-3. Confermi **Fatto / Troppo difficile / Non oggi**, con nota facoltativa.
-4. La piattaforma conserva i risultati in Supabase e adatta la difficolta' dopo esiti ripetuti.
-5. Routine e progressi mostrano azioni reali, non valutazioni inventate dall'AI.
-
-Percorsi inclusi: benessere/peso, rapporto con l'alcol (solo auto-osservazione e alternative non cliniche), lingue, leadership/operations, cambiamento/trasferimento, abitudine generica. Quattro livelli con varianti di esercizi. Vengono mantenuti login, diario, alimentazione, azioni e coach di supporto.
-
-## Correzione del 404 su Vercel e Aruba
-
-Nel repository GitHub pubblicato il 19 ottobre 2026, `next.config.ts` era vuoto (`const nextConfig = {}`). Poiche' il proxy Aruba inoltra a `/evolve`, Vercel restituiva 404 anche direttamente.
-
-Questo archivio contiene:
-
-```ts
-const nextConfig: NextConfig = {
-  basePath: '/evolve',
-  trailingSlash: false,
-  images: { unoptimized: true },
-};
-```
-
-Le immagini pubbliche usano `/evolve/brand/...` e `/evolve/icons/...`; le chiamate fetch usano `/evolve/api/...`. `next/link` e `next/navigation` aggiungono automaticamente basePath ai percorsi interni.
-
-**IMPORTANTE:** non basta caricare il file su Aruba. L'app Next.js deve essere pubblicata nuovamente su Vercel dal repository GitHub. Se il proxy Aruba attuale raggiunge Vercel e restituisce una pagina Next.js 404, lascialo invariato per la prima prova.
-
-## Aggiornare il codice (senza perdere il repository Git)
-
-1. Fai una copia di sicurezza della cartella locale del repository `evolve`.
-2. Estrai **il contenuto** di questo ZIP nella cartella che contiene gia' `package.json` e `.git`. Sovrascrivi i file con lo stesso nome; non cancellare `.git` o `.env.local`.
-3. Nell'archivio v0.4 non e' presente `src/middleware.ts` per evitare comportamenti imprevisti durante il test di instradamento. Se nella tua cartella locale e' rimasto un vecchio `src/middleware.ts`, rimuovilo *solo dal progetto locale da pubblicare* (fai prima una copia). L'accesso Supabase continuera' a essere controllato dalle route protette.
-4. Apri un terminale **nella cartella `evolve`**, poi:
+Leggi `LEGGIMI_PRIMA_v07.txt`. La migrazione da eseguire è **solo** `supabase/migrations/202610190003_life_coaching.sql` se le migrazioni delle versioni precedenti sono già installate.
 
 ```powershell
 npm install
+npm run test:ux
+npm run test:plan
+npm run test:life
+npm run test:daily
 npm run build
 ```
 
-Solo se la build termina senza errori:
+Esegui la pubblicazione con git **solo dopo** il successo dei test e della build:
 
 ```powershell
 git add -A
-git commit -m "Evolve v0.4 percorsi routine e basePath"
+git commit -m "Evolve v0.7 Adaptive Life Coaching"
 git push origin main
 ```
 
-5. Aspetta che su Vercel il nuovo deployment risulti **Ready**. Il progetto deve avere Framework **Next.js**, Root Directory `./`, Build Command Default o `npm run build`, Output Directory Default. Non modificare le 4 variabili Supabase/Gemini gia' impostate.
-6. Verifica **prima Vercel**, poi il dominio Aruba:
+### Limitazioni
 
-```cmd
-curl.exe -L -s -o NUL -w "HTTP: %{http_code}\n" https://evolve-roan.vercel.app/evolve
-curl.exe -L -s -o NUL -w "HTTP: %{http_code}\n" https://danilorusciano.it/evolve
-```
+1. Il motore quotidiano **utilizza regole verificabili**, non genera piani clinici né valuta psicologicamente la persona.
+2. La programmazione del calendario v0.6 e il motore di coaching situazionale v0.7 sono moduli distinti ma collegati. Se hai più percorsi attivi nello stesso giorno, il piano di oggi mostra soltanto un esercizio: gli altri rimangono disponibili nelle rispettive sezioni.
+3. Evolve v0.7 non è ancora un programma completo di preparazione atletica con schede progressive, né un piano dietetico clinico. L'attuale sezione Alimentazione esistente resta disponibile.
+4. Non è stata effettuata una build Next.js integrale nell'ambiente che ha generato lo ZIP: npm non poteva risolvere `registry.npmjs.org`. Non sono stati eseguiti test end-to-end con credenziali Supabase reali o su Aruba. Sono presenti test statici e logici eseguibili localmente.
+5. Il consumo elevato abituale di alcol non deve essere gestito con una scaletta automatica di riduzione; è opportuno rivolgersi a un professionista sanitario per valutarne la sicurezza.
+6. Questa versione non programma notifiche push automatiche; attività e check-in si eseguono aprendo la piattaforma.
 
-Ci aspettiamo `HTTP: 200` sulla pagina pubblica, poi `https://danilorusciano.it/evolve/login`.
-Una build `Ready` non garantisce che l'alias Vercel punti al deployment giusto: se la prima verifica continua a mostrare 404, controlla **Vercel → Deployments → ultimo deployment → Domains** e assicurati che `evolve-roan.vercel.app` sia assegnato al deployment nuovo.
+## Architettura
 
-## Supabase — indispensabile per la nuova funzionalita'
+- `src/lib/life/planner.ts`: selezione delle attività giornaliere, con limite di tempo e controllo di energia.
+- `src/lib/life/data.ts`: lettura dei dati per utente, fallback se manca la migrazione SQL.
+- `src/app/api/life/*`: API validate con Zod e sessione Supabase; tutte le modifiche sono filtrate per utente.
+- `src/components/life-day-client.tsx`: check-in e attività con registrazione delle note.
+- `src/components/life-scenarios-client.tsx`: scenari e feedback.
+- `src/components/life-profile-client.tsx`: onboarding generale e consenso AI.
+- `supabase/migrations/202610190003_life_coaching.sql`: cinque nuove tabelle con Row Level Security; non modifica o cancella le tabelle v0.6.
 
-Dopo aver messo in salvo i dati e prima di utilizzare Percorsi e Routine:
+## Test di accettazione
 
-1. Apri Supabase del progetto Evolve → SQL Editor → New query.
-2. Incolla *solo* `supabase/migrations/202610190001_change_engine.sql` e premi Run **una volta**.
-3. Non rieseguire la migrazione iniziale del 17 ottobre su un database gia' popolato.
-4. Le nuove tabelle sono `evolve_programs` e `evolve_checkins` con RLS per utente. Non vengono eliminati gli account, le azioni, le note, le sessioni o altri dati esistenti.
+1. Accedi e apri `/evolve/profilo`: compila almeno una priorità, salva, ricarica, verifica i dati.
+2. Apri `/evolve/scenari`: crea uno scenario, modificalo, provalo, salva il feedback e mettilo in pausa.
+3. Apri `/evolve/giornata`: registra energie basse e controlla che le attività opzionali siano alleggerite.
+4. Registra un'azione reale nel campo della priorità, aggiorna e controlla che il testo resti presente.
+5. Verifica `/evolve/piano`, `/evolve/routine`, `/evolve/percorsi`, `/evolve/alimentazione`, `/evolve/login`.
+6. Controlla che `/evolve/oggi` apra `/evolve/giornata`.
 
-Se non esegui SQL, l'homepage e le vecchie sezioni possono ancora funzionare, ma Percorsi e Routine mostrano un avviso e non salvano.
-
-## Test funzionali
-
-- Pagina pubblica `/evolve`: deve mostrare la landing, logo e immagini.
-- `/evolve/login`: login Supabase; poi `/evolve/oggi`.
-- `/evolve/percorsi`: crea un percorso “Spagnolo al lavoro”.
-- `/evolve/routine`: visualizza la missione e segna “Fatto”.
-- Ricarica: deve essere rimasta registrata su Supabase.
-- `/evolve/progressi`: mostra il check-in.
-- Prova mettere in pausa, riattivare, cambiare percorso; prova smartphone.
-- Prova `/evolve/alimentazione`, `/evolve/diario`, `/evolve/coach`: le vecchie API sono ora chiamate con `/evolve/api/...`.
-- Controlla con un secondo account che i dati del primo non siano visibili.
-
-## Limiti di questa versione
-
-- I percorsi sono **modelli predefiniti personalizzati in base ai risultati**, non un piano clinico, e non costruiscono ancora automaticamente nuovi esercizi con Gemini.
-- Un solo check-in per percorso per data (Europe/Rome), modificabile nello stesso giorno.
-- La difficolta' aumenta dopo 3 completamenti consecutivi nello stesso livello. Due check-in consecutivi “Troppo difficile” possono ridurla; “Non oggi” non causa una penalizzazione.
-- Non sono implementati notifiche, promemoria automatici, test end-to-end o backup automatici.
-- In caso di consumo elevato/quotidiano di alcol, una riduzione autonoma e rapida puo' causare astinenza pericolosa. L'app **non** prescrive quantita' da ridurre. Serve una valutazione medica.
-- Per privacy, evita dettagli sanitari sensibili sul tier Gemini gratuito. Dati dei percorsi e check-in sono conservati sul tuo Supabase; non vengono automaticamente inviati al modello.
-
-## Verifiche effettuate nella preparazione ZIP
-
-Controllata la struttura dell'archivio, il `basePath`, i percorsi relativi degli asset, il prefisso delle API, e la sintassi di tutti i file TypeScript/TSX con il compilatore TypeScript. **Non e' stato possibile completare una build `npm run build` nell'ambiente di preparazione** per indisponibilita' della rete npm. Esegui la compilazione sul PC prima del push e non pubblicare in caso di errori.

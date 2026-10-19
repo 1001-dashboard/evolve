@@ -1,0 +1,52 @@
+EVOLVE v0.7 - Adaptive Life Coaching
+====================================
+QUESTO ZIP E' IL PROGETTO COMPLETO, NON VA CARICATO SU ARUBA.
+
+1. Fai una COPIA della cartella locale evolve (v0.6 funzionante).
+2. Estrai TUTTO lo ZIP nella cartella del progetto con package.json.
+   Sovrascrivi i file; NON cancellare .git ne' .env.local.
+3. Supabase -> SQL Editor -> esegui UNA SOLA VOLTA:
+   supabase/migrations/202610190003_life_coaching.sql
+   Mantiene i dati delle versioni precedenti; crea le nuove tabelle.
+4. Nel terminale della cartella del progetto esegui:
+     npm install
+     npm run test:ux
+     npm run test:plan
+     npm run test:life
+     npm run test:daily
+     npm run build
+5. SOLO SE la build va a buon fine:
+     git add -A
+     git commit -m "Evolve v0.7 Adaptive Life Coaching"
+     git push origin main
+6. Attendi Vercel -> Deployments -> Ready.
+7. Apri https://danilorusciano.it/evolve, accedi e prova:
+   /evolve/profilo, /evolve/scenari, /evolve/giornata.
+   /evolve/oggi reindirizza alla nuova giornata.
+
+NON modificare Aruba, index.php, .htaccess, basePath o variabili Supabase/Gemini.
+
+PRIMO COLLAUDO CONSIGLIATO:
+  - Salva il profilo. Ricarica e controlla che sia rimasto.
+  - Crea uno scenario modello. Personalizzalo e prova il feedback.
+  - Registra il check-in, cambia energia/tempo e verifica il piano.
+  - Scrivi una priorita' reale e registra la mini-azione.
+  - Verifica che Percorsi, Piano, Alimentazione e Login funzionino come prima.
+
+ROLLBACK se necessario:
+  - Vercel -> Deployments -> torna al deployment v0.6 funzionante;
+    oppure ripristina la copia locale e pubblica un commit di ripristino.
+  - La migrazione SQL aggiunge tabelle: non devi eliminarle per il rollback.
+
+LIMITI TEST:
+  Test statici, unita' e regressione: superati nel pacchetto di sviluppo.
+  npm run build: NON eseguito in questo ambiente (registry npm irraggiungibile).
+  Integrazione reale con Supabase, login e proxy Aruba: DA VERIFICARE in produzione.
+
+NOTE:
+  Le nuove funzioni sono rules-based: non promettono diagnosi o terapie.
+  Il Coach AI mantiene i messaggi espliciti; per inviare il contesto generale del
+  profilo a Gemini, devi abilitare l'apposito consenso nel Profilo.
+  I dati sensibili facoltativi restano nel database dell'account e non vengono
+  aggiunti automaticamente al prompt del Coach AI.
+  Fitness specifico (schede fisiche) e nutrizione clinica non sono implementati in v0.7.

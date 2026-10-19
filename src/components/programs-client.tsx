@@ -6,12 +6,14 @@ import {ArrowRight,ArrowUpRight,BookOpenCheck,CheckCircle2,Clock3,Footprints,Lan
 import {alcoholNotice,categories,exerciseFor,isAlcohol,type Category,type Checkin,type Outcome,type Program} from '@/lib/programs';
 import {apiUrl} from '@/lib/config';
 import {countAnswered,formatGuidedNote,guideFor,requiredAnswers} from '@/lib/exercise-guide';
+import {personalizedExercise,personalizedGuide,taskForDay,scheduleFor,type PlanProfile} from '@/lib/personal-plan';
 
-type Props={programs:Program[];checkins:Checkin[];day:string;error:string|null;mode:'all'|'daily'};
+const CalendarDaysIcon=()=> <Clock3 size={27} className="text-teal-700"/>;
+type Props={programs:Program[];checkins:Checkin[];profiles:PlanProfile[];day:string;error:string|null;mode:'all'|'daily'};
 const icons: Record<Category,typeof Footprints> = {benessere:Footprints,alcol:Utensils,lingue:Languages,lavoro:Workflow,cambiamento:TrendingUp,altro:Target};
 const outcomes:Record<Outcome,string>={done:'Completato',difficult:'Troppo difficile',skipped:'Non oggi'};
 
-export function ProgramsClient({programs,checkins,day,error,mode}:Props){
+export function ProgramsClient({programs,checkins,profiles,day,error,mode}:Props){
   const [category,setCategory]=useState<Category>('lingue');
   const [title,setTitle]=useState(categories.find(c=>c.id==='lingue')!.example);
   const [objective,setObjective]=useState('');
@@ -42,14 +44,17 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
   function submitProgram(e:React.FormEvent){e.preventDefault();if(!title.trim())return;call('/api/programs','POST',{category,title,objective})}
   const currentLogs=selectedProgram?(doneByProgram.get(selectedProgram.id)??[]):[];
   const todayLog=currentLogs.find(c=>c.day===day);
-  const currentExercise=selectedProgram?exerciseFor(selectedProgram,Math.max(0,currentLogs.length-(todayLog?1:0))):null;
+  const currentProfile=profiles.find(p=>p.program_id===selectedProgram?.id);
+  const personalTask=currentProfile?taskForDay(currentProfile,day,currentLogs):null;
+  const upcomingTask=currentProfile?scheduleFor(currentProfile,day,currentLogs).find(x=>x.day>day):null;
+  const currentExercise=selectedProgram?(currentProfile?(personalTask?personalizedExercise(personalTask,currentProfile):null):exerciseFor(selectedProgram,Math.max(0,currentLogs.length-(todayLog?1:0)))):null;
   const statusCount=active.filter(p=>checkins.some(c=>c.program_id===p.id&&c.day===day)).length;
-  const guide = currentExercise && selectedProgram ? guideFor(currentExercise,selectedProgram.category) : null;
+  const guide = currentExercise && selectedProgram ? (personalTask&&currentProfile?personalizedGuide(personalTask,currentProfile):guideFor(currentExercise,selectedProgram.category)) : null;
   const filled=countAnswered(guide,answers);
   const needed=requiredAnswers(guide,shortVersion);
   const payloadNote=formatGuidedNote(guide,answers,note);
   function saveOutcome(outcome:Outcome){
-    if(!selectedProgram||busy)return;
+    if(!selectedProgram||busy||!currentExercise)return;
     if(outcome==='done'&&!todayLog&&filled<needed){
       setLocalError(`Per completare l’esercizio, compila ${needed===1?'almeno un campo':`i ${needed} campi`}. Oppure scegli «Versione breve».`);
       document.getElementById('exercise-fields')?.scrollIntoView({behavior:'smooth',block:'center'});
@@ -88,7 +93,8 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
         {sorted.length===0&&<p className="muted text-sm">Nessun percorso attivo. Riattivane uno dalla sezione Percorsi.</p>}
       </aside>
       {selectedProgram&&<div className="space-y-4 min-w-0">
-        <section className="path-workout">
+        <div className="plan-inline"><div><p className="eyebrow mb-1">IL TUO PIANO</p><strong>{currentProfile?'Allenamenti su misura dei tuoi vincoli':'Personalizza questo percorso'}</strong><p className="muted text-xs">{currentProfile?`${currentProfile.days_per_week} giorni a settimana · ${currentProfile.minutes} minuti`: 'Definisci priorità, tempo e risultato atteso in 2 minuti.'}</p></div><Link href={`/piano?program=${selectedProgram.id}`} className="btn-secondary">{currentProfile?'Apri il piano':'Personalizza'} <ArrowRight size={15} className="inline"/></Link></div>
+        {currentExercise?<section className="path-workout">
           <div className="path-workout-top"><span className="path-tag"><Sparkles size={15}/> ESERCIZIO DI OGGI</span><span className="path-date">{new Date(day+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}</span></div>
           <p className="eyebrow mt-6">{categories.find(c=>c.id===selectedProgram.category)?.label} · Livello {selectedProgram.level} di 4</p>
           <h2 className="path-workout-title">{currentExercise?.title}</h2>
@@ -113,7 +119,7 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
             <div className="path-result-footer"><div><strong>Hai provato l’esercizio?</strong><p>Scegli come è andata. Se non è riuscito, il percorso si adatta: non perdi i progressi.</p></div><small className={payloadNote.length>500?'path-over-limit':''}>{payloadNote.length}/500 caratteri salvabili</small></div>
             <div className="path-buttons"><button type="button" disabled={busy} onClick={()=>saveOutcome('done')} className="btn"><CheckCircle2 size={17} className="inline mr-2"/>{busy?'Salvataggio…':'Ho svolto l’esercizio'}</button><button type="button" disabled={busy} onClick={()=>saveOutcome('difficult')} className="btn-secondary">Troppo difficile</button><button type="button" disabled={busy} onClick={()=>saveOutcome('skipped')} className="btn-secondary">Non oggi</button></div>
           </div>:<div className="path-paused"><Pause size={18}/><span>Percorso {selectedProgram.status==='paused'?'in pausa':'completato'}.</span></div>}
-        </section>
+        </section>:<section className="panel plan-rest"><CalendarDaysIcon/><h2 className="text-xl font-bold mt-2">Oggi è un giorno libero dal piano</h2><p className="muted mt-2">Non devi completare esercizi ogni giorno per progredire. {upcomingTask?`Il prossimo allenamento è previsto per ${upcomingTask.day}.`:'Il prossimo ciclo comincerà dopo questa settimana.'}</p><Link href={`/piano?program=${selectedProgram.id}`} className="btn-secondary inline-block mt-4">Rivedi la settimana <ArrowRight size={15} className="inline"/></Link></section>}
         <section className="panel">
           <div className="flex justify-between gap-4 flex-wrap"><div><p className="eyebrow mb-2">ADATTAMENTO</p><h3 className="text-xl font-bold">Il metodo è progressivo</h3></div><span className="chip">Livello {selectedProgram.level}/4</span></div>
           <div className="path-stages" aria-label="Livelli del percorso">{[1,2,3,4].map(l=><div key={l} className={'path-stage '+(selectedProgram.level>=l?'filled':'')}><span>{l}</span></div>)}</div>

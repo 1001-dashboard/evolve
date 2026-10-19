@@ -1,0 +1,1 @@
+import {TrainingClient} from '@/components/training-client';export default function Page(){return <TrainingClient/>;}

@@ -1,0 +1,48 @@
+'use client';
+import {useState} from 'react';
+import {useRouter} from 'next/navigation';
+import Link from 'next/link';
+import {Activity,ArrowRight,CalendarDays,CheckCircle2,Clock3,Compass,Heart,RefreshCcw,Target,UserRound} from 'lucide-react';
+import type {LifeProfile,DailyState} from '@/lib/life/types';
+import type {TodayCard} from '@/lib/life/planner';
+export function LifeDayClient({profile,checkin,cards,day,error,activeCount}:{profile:LifeProfile|null;checkin:DailyState|null;cards:TodayCard[];day:string;error:string|null;activeCount:number}){
+ const router=useRouter();const [energy,setEnergy]=useState(checkin?.energy??3);const [mood,setMood]=useState(checkin?.mood??3);
+ const [sleep,setSleep]=useState(checkin?.sleep_hours?.toString()??'');
+ const [minutes,setMinutes]=useState(checkin?.available_minutes??profile?.minutes_per_day??15);
+ const [note,setNote]=useState(checkin?.note??'');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
+ const [localDone,setLocalDone]=useState<string[]>([]);const [stepNotes,setStepNotes]=useState<Record<string,string>>({});
+ async function request(url:string,body:object){setBusy(true);setMessage('');try{
+  const r=await fetch('/evolve'+url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json();if(!r.ok)throw new Error(d.error||'Salvataggio non riuscito');router.refresh();return true;
+ }catch(err){setMessage(err instanceof Error?err.message:'Errore di rete');return false;}finally{setBusy(false);}}
+ async function checkinSave(e:React.FormEvent){e.preventDefault();if(await request('/api/life/checkin',{energy,mood,sleep_hours:sleep===''?null:Number(sleep),available_minutes:minutes,note})){setMessage('Check-in registrato. Il piano si aggiorna in base alle tue risorse di oggi.');}}
+ async function mark(card:TodayCard){if(await request('/api/life/actions',{action_key:card.key,status:'done',note:stepNotes[card.key]??''})){setLocalDone(xs=>[...xs,card.key]);setMessage('Azione registrata.');}}
+ const done=cards.filter(x=>x.completed||localDone.includes(x.key)).length;
+ return <div className="life-page"><header className="life-heading"><div><p className="eyebrow">EVOLVE · IL TUO GIORNO</p><h1>{profile?.display_name?`Oggi, ${profile.display_name}.`:'Oggi: un passo concreto.'}</h1><p className="muted">Un programma leggero, adattato al contesto e agli obiettivi. Non devi fare tutto, devi fare qualcosa di utile.</p></div><CalendarDays size={36}/></header>
+ {error&&<p className="life-alert" role="alert">{error}</p>}{message&&<p className="life-ok" role="status">{message}</p>}
+ {!profile&&<section className="life-start-banner"><div><p className="eyebrow">PRIMO PASSO · 2 MINUTI</p><h2>Personalizza Evolve</h2><p>Scegli priorità, tempo e modo di allenarti: il sistema smetterà di trattarti come un profilo generico.</p></div><Link className="btn" href="/profilo">Configura il profilo <ArrowRight size={17} className="inline"/></Link></section>}
+ <div className="life-day-layout"><div className="life-stack"><section className="life-panel"><div className="life-row-between"><div><p className="eyebrow">IL CHECK-IN</p><h2>Come stai oggi?</h2></div><span className="chip">{new Date(day+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long'})}</span></div>
+ <p className="muted text-sm">30 secondi. Non serve analizzare come ti senti: bastano poche informazioni per decidere un carico sostenibile.</p>
+ <form onSubmit={checkinSave} className="life-checkin-form"><div className="life-scale-row"><span><Activity size={16}/> Energia</span><div className="life-scale">{[1,2,3,4,5].map(v=><button type="button" key={v} aria-pressed={energy===v} className={energy===v?'chosen':''} onClick={()=>setEnergy(v)}>{v}</button>)}</div></div>
+ <div className="life-scale-row"><span><Heart size={16}/> Stato d'animo</span><div className="life-scale">{[1,2,3,4,5].map(v=><button type="button" key={v} aria-pressed={mood===v} className={mood===v?'chosen':''} onClick={()=>setMood(v)}>{v}</button>)}</div></div>
+ <p className="muted text-xs">Scala 1 = molto basso, 5 = molto buono. È una percezione personale, non un punteggio clinico.</p>
+ <div className="life-fields"><label>Sonno, ore · facoltativo<input className="field" type="number" step="0.5" min={0} max={16} placeholder="Es. 7" value={sleep} onChange={e=>setSleep(e.target.value)}/></label>
+ <label>Tempo disponibile oggi<select className="field" value={minutes} onChange={e=>setMinutes(Number(e.target.value))}>{[5,10,15,20,30,45,60].map(v=><option key={v} value={v}>{v} minuti</option>)}</select></label></div>
+ <label className="life-block-label">C'è un ostacolo importante oggi? · facoltativo<textarea className="field" rows={2} maxLength={350} value={note} onChange={e=>setNote(e.target.value)} placeholder="Es. Turno impegnativo, poco sonno, spostamenti…"/></label>
+ <div className="life-buttons"><button className="btn" type="submit" disabled={busy}>{busy?'Salvo…':checkin?'Aggiorna check-in':'Salva e adatta il piano'}</button>{checkin&&<span className="life-hint"><CheckCircle2 size={15}/> Registrato oggi</span>}</div></form></section>
+ <section className="life-panel"><div className="life-row-between"><div><p className="eyebrow">IL PIANO PRATICO</p><h2>Le azioni di oggi</h2></div><span className="chip">{done} / {cards.length} registrate</span></div>
+ <p className="muted text-sm">Evolve sceglie poche attività dal tuo profilo, dai percorsi esistenti e dagli scenari attivi. Le azioni restano modificabili.</p>
+ <div className="life-task-stack">{cards.map((card,index)=>{const complete=Boolean(card.completed||localDone.includes(card.key));return <article key={card.key} className={'life-task '+(complete?'done':'')}><div className="life-task-top"><span className="life-task-num">{index+1}</span><div className="life-task-body"><h3>{card.label}</h3><p>{card.detail}</p><small><Clock3 size={14}/> {card.minutes} min · {card.reason}</small></div></div>
+ {card.kind==='habit'&&!complete&&<label className="life-step-note">{card.key==='start-day'?'Qual è la priorità di oggi e quando inizi?':'Quale cosa ha funzionato oggi?'}<input className="field" minLength={3} maxLength={280} value={stepNotes[card.key]??''} onChange={e=>setStepNotes(p=>({...p,[card.key]:e.target.value}))} placeholder={card.key==='start-day'?'Es. Ripassare 5 frasi in spagnolo dopo il caffè':'Es. Ho affrontato una telefonata difficile senza rimandare'}/></label>}
+ {complete&&card.completion_note&&<p className="life-task-saved">La tua nota: {card.completion_note}</p>}
+ <div className="life-task-foot">{complete?<span className="life-ok"><CheckCircle2 size={17}/> Fatto oggi</span>:card.kind==='program'?<Link className="btn-secondary" href={card.href??'/routine'}>Apri l'esercizio <ArrowRight size={15} className="inline"/></Link>:<button className="btn-secondary" disabled={busy||(card.kind==='habit'&&(stepNotes[card.key]??'').trim().length<3)} onClick={()=>mark(card)}>Ho fatto questo passo <CheckCircle2 size={15} className="inline"/></button>}
+ {card.kind==='scenario'&&<Link className="life-text-link" href={card.href??'/scenari'}>Vedi protocollo</Link>}</div></article>})}</div>
+ <p className="muted text-xs">Gli esercizi dei percorsi vengono segnati come completati nella sezione Routine. Le mini-azioni si registrano qui.</p></section></div>
+ <aside className="life-stack"><section className="life-panel life-panel-soft"><p className="eyebrow">LA TUA BUSSOLA</p><h2>{profile?.main_goal||'Che cosa vuoi migliorare?'}</h2><p className="muted text-sm">{profile?.current_context||'Racconta brevemente il tuo contesto: Evolve potrà suggerire passi più pertinenti.'}</p><Link className="life-link" href="/profilo"><UserRound size={16}/> {profile?'Modifica profilo':'Imposta le tue priorità'} <ArrowRight size={15}/></Link></section>
+ <section className="life-panel"><p className="eyebrow">QUANDO C’È UN IMPREVISTO</p><h2>Hai già un piano B?</h2><p className="muted text-sm">Prepara strategie «se-allora» per lingua, lavoro, adattamento, famiglia e routine.</p><Link className="life-link" href="/scenari"><Compass size={17}/> Apri gli scenari <ArrowRight size={15}/></Link></section>
+ <section className="life-panel"><p className="eyebrow">I TUOI PERCORSI</p><h2>{activeCount} attivi</h2><p className="muted text-sm">Se oggi hai un esercizio programmato, lo trovi nel piano. Gli altri restano disponibili.</p><Link className="life-link" href="/piano"><Target size={17}/> Rivedi la settimana <ArrowRight size={15}/></Link></section>
+ <section className="life-panel"><p className="eyebrow">I TUOI STRUMENTI</p><h2>Allenati su più fronti</h2><p className="muted text-sm">I moduli rimangono disponibili anche fuori dal piano del giorno.</p><Link className="life-link" href="/alimentazione">Alimentazione e ricette <ArrowRight size={15}/></Link><Link className="life-link" href="/routine">Esercizi dei percorsi <ArrowRight size={15}/></Link><Link className="life-link" href="/coach">Coach AI <ArrowRight size={15}/></Link></section>
+ <section className="life-panel"><p className="eyebrow">ADATTAMENTO</p><h2>Il piano cambia insieme a te</h2><p className="muted text-sm">Con energia o umore bassi, Evolve alleggerisce i compiti opzionali. Non interpreta questi dati come diagnosi né modifica terapie o prescrizioni.</p><Link className="life-link" href="/progressi"><RefreshCcw size={16}/> Rivedi i progressi <ArrowRight size={15}/></Link></section></aside></div>
+ <p className="notice">Questa versione personalizza il carico con regole verificabili e usa esercizi di coaching non clinico. Non sostituisce supporto sanitario o psicologico, e non impone cambiamenti al consumo di alcol.</p>
+ </div>;
+}

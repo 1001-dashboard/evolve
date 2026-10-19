@@ -1,0 +1,1 @@
+import {MealPrepClient} from '@/components/mealprep-client';export default function Page(){return <MealPrepClient/>;}

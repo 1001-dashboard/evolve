@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { serverSupabase } from '@/lib/supabase/server';
 import { exerciseFor, romeDay, type Program, type Checkin } from '@/lib/programs';
+import {taskForDay,type PlanProfile} from '@/lib/personal-plan';
 
 const schema = z.object({
   programId: z.string().uuid(),
@@ -29,9 +30,14 @@ export async function POST(req: NextRequest) {
     .eq('program_id',program.id).eq('day',day).maybeSingle();
   const {count}=await sb.from('evolve_checkins').select('id',{count:'exact',head:true})
     .eq('user_id',user.id).eq('program_id',program.id);
+  const {data:profile,error:profileError}=await sb.from('evolve_plan_profiles').select('program_id,user_id,focus,baseline,obstacle,success_sign,minutes,days_per_week,confidence,preferred_time,starts_on,updated_at').eq('user_id',user.id).eq('program_id',program.id).maybeSingle();
+  if(profileError) return NextResponse.json({error:'Il piano non è disponibile: verifica la migrazione Supabase v0.6.'},{status:500});
+  const {data:recentForPlan}=profile?await sb.from('evolve_checkins').select('day,outcome').eq('user_id',user.id).eq('program_id',program.id).order('day',{ascending:false}).limit(30):{data:[]};
+  const planned=profile?taskForDay(profile as PlanProfile,day,recentForPlan??[]):null;
+  if(profile && !planned && !existing) return NextResponse.json({error:'Oggi il tuo piano prevede un giorno libero: l’allenamento riprende alla prossima data.'},{status:400});
   const exercise=exerciseFor(program, Math.max(0,(count??0)-(existing ? 1:0)));
   const {error:saveError}=await sb.from('evolve_checkins').upsert({
-    user_id:user.id,program_id:program.id,day,exercise_key:existing?.exercise_key??exercise.key,
+    user_id:user.id,program_id:program.id,day,exercise_key:existing?.exercise_key??planned?.key??exercise.key,
     outcome:parsed.data.outcome,note:parsed.data.note || null,
   },{onConflict:'program_id,day'});
   if(saveError) return NextResponse.json({error:'Impossibile salvare il risultato. Controlla la migrazione SQL.'},{status:500});

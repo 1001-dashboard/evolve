@@ -1,6 +1,6 @@
 {
   "name": "evolve-coach",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:ux": "node tests/check-ux.mjs"
+    "test:ux": "node tests/check-ux.mjs",
+    "test:plan": "node tests/check-plan.mjs",
+    "test:life": "node tests/check-life.mjs",
+    "test:all": "npm run test:ux && npm run test:plan && npm run test:life",
+    "test:daily": "node tests/check-daily.mjs",
+    "test:release": "node tests/check-release.mjs && npm run test:plan && npm run test:life && npm run test:daily"
   },
   "dependencies": {
     "next": "^15.5.0",
