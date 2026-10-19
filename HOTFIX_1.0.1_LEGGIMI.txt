@@ -1,0 +1,24 @@
+EVOLVE 1.0.1 — HOTFIX BUILD GIORNATA
+
+Causa: makeDayPlan richiede la proprietà `state: DailyState | null`,
+mentre loadLife restituisce il valore con nome `checkin`.
+
+Correzione:
+src/app/(app)/giornata/page.tsx
+- passaggio esplicito di `state: life.checkin`
+- passaggio esplicito delle altre proprietà richieste
+
+Non sono necessarie migrazioni SQL aggiuntive, modifiche al proxy Aruba
+o modifiche alle variabili Vercel.
+
+Installazione: estrai questo ZIP sopra la cartella del progetto mantenendo
+la directory .git e il tuo .env.local.
+Esegui:
+ npm run test:release
+ npm run build
+ git add -A
+ git commit -m "Fix Evolve 1.0 giornata planner typing"
+ git push origin main
+
+Il test npm run build deve essere eseguito sul tuo PC; in questo ambiente
+non sono disponibili le dipendenze Next.js necessarie a una build completa.
