@@ -1,3 +1,19 @@
+# Evolve v0.5 — Esperienza guidata e logo robusto
+
+**Aggiornamento della versione v0.4 già funzionante.** La configurazione `/evolve` e la migrazione Supabase rimangono inalterate.
+
+- Logo originale importato come asset statico compilato, con fallback leggibile in caso di errore di caricamento.
+- I percorsi hanno istruzioni concrete in **tre passaggi**, esempi espandibili, campi coerenti con la categoria ed una versione breve per le giornate difficili.
+- Le risposte finiscono nel campo `note` della tabella `evolve_checkins`; nessuna nuova tabella o migrazione.
+- I progressi di riepilogo sono ora dopo la scheda dell'esercizio, non prima: la priorità è l'azione.
+- Stati `Fatto`, `Troppo difficile` e `Non oggi` rimangono, con correzione della registrazione giornaliera già possibile.
+- La navigazione evidenzia la pagina attiva; CSS e layout mobile sono stati migliorati.
+- Test locali disponibili: `npm run test:ux` (dopo `npm install`); vedi `TEST_REPORT_v05.md`.
+
+**Installazione rapida:** leggi `LEGGIMI_PRIMA_v05.txt`. La sezione seguente descrive la base v0.4 e rimane per documentare database e API.
+
+---
+
 # Evolve v0.4 — Personal Change Engine
 
 ## Che cosa cambia

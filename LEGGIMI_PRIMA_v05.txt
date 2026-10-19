@@ -1,0 +1,53 @@
+EVOLVE v0.5 - UX GUIDATA, LOGO, TEST
+==================================
+
+Questa versione aggiorna la v0.4 gia' funzionante.
+NON modificare i file di Aruba: index.php e .htaccess restano invariati.
+NON e' necessaria una nuova migrazione SQL se v0.4 e' gia' funzionante.
+NON cancellare la cartella .git e non sovrascrivere .env.local.
+
+INSTALLAZIONE SU WINDOWS
+1. Crea una COPIA di sicurezza della cartella locale del repository 'evolve'.
+2. Apri lo ZIP e copia TUTTO il contenuto nella cartella locale che
+   contiene package.json e .git, sovrascrivendo i file omonimi.
+3. Assicurati che NON sia rimasto un vecchio src/middleware.ts (nella v0.4
+   non era incluso). Non eliminare il middleware di una versione diversa
+   senza prima verificare la sua configurazione.
+4. Apri PowerShell o CMD nella cartella del repository:
+
+   npm install
+   npm run test:ux
+   npm run build
+
+5. Se la build e' riuscita:
+
+   git status
+   git add -A
+   git commit -m "Evolve v0.5 UX guidata e logo"
+   git push origin main
+
+6. Attendi 'Ready' su Vercel. Premi Ctrl+Shift+R su:
+
+   https://evolve-roan.vercel.app/evolve/percorsi
+   https://danilorusciano.it/evolve/percorsi
+
+VERIFICA RAPIDA DELL'ESERCIZIO
+- Apri Percorsi e seleziona 'Prepararmi al trasferimento e adattarmi'.
+- Nell'esercizio 'Dividi il cambiamento', premi 'Mostrami un esempio pratico'.
+- Compila i campi 1, 2 e 3 oppure attiva 'Versione breve' e compilane 1.
+- Premi 'Ho svolto l'esercizio'. Controlla che appaia check-in salvato.
+- Prova 'Troppo difficile' e 'Non oggi' su un esercizio (si puo' correggere
+  la valutazione gia' registrata nella stessa giornata).
+- Verifica su smartphone o finestra stretta il layout a singola colonna.
+- Verifica il logo nella sidebar: e' un asset statico importato. Se il
+  browser non lo carica, compare comunque una scritta/logo di riserva.
+
+PERIMETRO TEST
+- Eseguiti: 34 file TS/TSX con parsing senza errori, 72 esercizi valutati
+  e 216 istruzioni verificati, casi particolari (c1a, lingue, alcol).
+- Non eseguiti: build integrale Next.js e prova end-to-end autenticata;
+  l'ambiente non ha le dipendenze node_modules e non riesce ad installarle.
+- Su Windows: NON pubblicare se 'npm run build' restituisce errori.
+
+Le risposte sono salvate nel campo note di check-in gia' presente in
+Supabase. Nessuna nuova tabella ne' cancellazione dati.

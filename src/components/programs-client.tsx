@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {ArrowRight,ArrowUpRight,BookOpenCheck,CheckCircle2,Clock3,Footprints,Languages,Pause,Play,Plus,RefreshCw,ShieldAlert,Sparkles,Target,TrendingUp,Utensils,Workflow} from 'lucide-react';
 import {alcoholNotice,categories,exerciseFor,isAlcohol,type Category,type Checkin,type Outcome,type Program} from '@/lib/programs';
 import {apiUrl} from '@/lib/config';
+import {countAnswered,formatGuidedNote,guideFor,requiredAnswers} from '@/lib/exercise-guide';
 
 type Props={programs:Program[];checkins:Checkin[];day:string;error:string|null;mode:'all'|'daily'};
 const icons: Record<Category,typeof Footprints> = {benessere:Footprints,alcol:Utensils,lingue:Languages,lavoro:Workflow,cambiamento:TrendingUp,altro:Target};
@@ -17,6 +18,8 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
   const [showCreate,setShowCreate]=useState(false);
   const [selected,setSelected]=useState<string|null>(programs.find(p=>p.status==='active')?.id??programs[0]?.id??null);
   const [note,setNote]=useState('');
+  const [answers,setAnswers]=useState<Record<string,string>>({});
+  const [shortVersion,setShortVersion]=useState(false);
   const [busy,setBusy]=useState(false);
   const [localError,setLocalError]=useState('');
 
@@ -24,8 +27,6 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
   const selectedProgram=mode==='daily'?(active.find(p=>p.id===selected)??active[0]):(programs.find(p=>p.id===selected)??active[0]??programs[0]);
   const sorted=mode==='daily'?[...active]:programs;
   const totalDone=checkins.filter(c=>c.outcome==='done').length;
-  const total=checkins.length;
-  const todayDone=checkins.filter(c=>c.day===day&&c.outcome==='done').length;
   const doneByProgram=useMemo(()=>new Map(programs.map(p=>[p.id,checkins.filter(c=>c.program_id===p.id)])),[programs,checkins]);
 
   async function call(path:string,method:'POST'|'PATCH',body:object){
@@ -43,6 +44,21 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
   const todayLog=currentLogs.find(c=>c.day===day);
   const currentExercise=selectedProgram?exerciseFor(selectedProgram,Math.max(0,currentLogs.length-(todayLog?1:0))):null;
   const statusCount=active.filter(p=>checkins.some(c=>c.program_id===p.id&&c.day===day)).length;
+  const guide = currentExercise && selectedProgram ? guideFor(currentExercise,selectedProgram.category) : null;
+  const filled=countAnswered(guide,answers);
+  const needed=requiredAnswers(guide,shortVersion);
+  const payloadNote=formatGuidedNote(guide,answers,note);
+  function saveOutcome(outcome:Outcome){
+    if(!selectedProgram||busy)return;
+    if(outcome==='done'&&!todayLog&&filled<needed){
+      setLocalError(`Per completare l’esercizio, compila ${needed===1?'almeno un campo':`i ${needed} campi`}. Oppure scegli «Versione breve».`);
+      document.getElementById('exercise-fields')?.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+    if(payloadNote.length>500){setLocalError('Le risposte sono troppo lunghe per essere salvate. Accorciale un po’ (massimo 500 caratteri complessivi).');return;}
+    // Editing a saved check-in with blank fields must never erase the earlier work.
+    call('/api/programs/checkin','POST',{programId:selectedProgram.id,outcome,note:payloadNote||(todayLog?.note??'')});
+  }
 
   return <div className="path-page space-y-6">
     <header className="path-header">
@@ -51,11 +67,6 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
       {mode==='all'?<button className="btn" type="button" onClick={()=>setShowCreate(s=>!s)}><Plus size={17} className="inline mr-1"/> Nuovo percorso</button>:<Link href="/percorsi" className="btn-secondary">Gestisci i percorsi <ArrowRight size={15} className="inline ml-1"/></Link>}
     </header>
     {(error||localError)&&<div role="alert" className="path-alert"><ShieldAlert size={19}/><span>{error||localError}</span></div>}
-    <section className="path-summary" aria-label="Riepilogo progressi">
-      <div className="path-stat"><span>Percorsi attivi</span><strong>{active.length}</strong><small>Massimo 6 contemporanei</small></div>
-      <div className="path-stat"><span>Allenamenti completati</span><strong>{totalDone}</strong><small>Risultati salvati</small></div>
-      <div className="path-stat"><span>Oggi</span><strong>{todayDone}<small>/{active.length}</small></strong><small>{statusCount} percorsi con check-in</small></div>
-    </section>
 
     {mode==='all'&&showCreate&&<section className="panel path-create" aria-label="Nuovo percorso">
       <div className="flex justify-between items-center gap-3 mb-4"><div><p className="eyebrow">DEFINE</p><h2 className="text-xl font-bold">Da dove vuoi iniziare?</h2></div><button type="button" className="btn-secondary" onClick={()=>setShowCreate(false)}>Chiudi</button></div>
@@ -73,7 +84,7 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
     {programs.length===0&&!error&&<section className="path-empty"><Target size={33}/><h2>Inizia da un solo obiettivo</h2><p>Il primo passo non è fare tutto. È scegliere una competenza o un’abitudine da allenare.</p><Link href="/percorsi" className="btn">{mode==='daily'?'Crea il primo percorso':'Vai ai percorsi'}</Link>{mode==='all'&&<button className="btn-secondary" onClick={()=>setShowCreate(true)}>Configura un obiettivo</button>}</section>}
     {programs.length>0&&<div className="path-content">
       <aside className="path-list" aria-label="Elenco percorsi"><h2 className="font-bold text-lg mb-3">{mode==='all'?'Percorsi':'Routine attive'}</h2>
-        {sorted.map(p=>{const Icon=icons[p.category];const list=doneByProgram.get(p.id)??[];const todayCheck=list.find(x=>x.day===day);return <button type="button" key={p.id} onClick={()=>{setSelected(p.id);setNote('');setLocalError('')}} className={'path-list-item '+(selectedProgram?.id===p.id?'selected':'')}><div className="path-list-icon"><Icon size={20}/></div><div className="text-left min-w-0 flex-1"><strong>{p.title}</strong><small>Livello {p.level} / 4 · {list.filter(c=>c.outcome==='done').length} completati</small></div>{todayCheck?.outcome==='done'?<CheckCircle2 size={19} className="text-teal-700"/>:<ArrowUpRight size={17}/>}</button>})}
+        {sorted.map(p=>{const Icon=icons[p.category];const list=doneByProgram.get(p.id)??[];const todayCheck=list.find(x=>x.day===day);return <button type="button" key={p.id} onClick={()=>{setSelected(p.id);setNote('');setAnswers({});setShortVersion(false);setLocalError('')}} className={'path-list-item '+(selectedProgram?.id===p.id?'selected':'')}><div className="path-list-icon"><Icon size={20}/></div><div className="text-left min-w-0 flex-1"><strong>{p.title}</strong><small>Livello {p.level} / 4 · {list.filter(c=>c.outcome==='done').length} completati</small></div>{todayCheck?.outcome==='done'?<CheckCircle2 size={19} className="text-teal-700"/>:<ArrowUpRight size={17}/>}</button>})}
         {sorted.length===0&&<p className="muted text-sm">Nessun percorso attivo. Riattivane uno dalla sezione Percorsi.</p>}
       </aside>
       {selectedProgram&&<div className="space-y-4 min-w-0">
@@ -82,14 +93,25 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
           <p className="eyebrow mt-6">{categories.find(c=>c.id===selectedProgram.category)?.label} · Livello {selectedProgram.level} di 4</p>
           <h2 className="path-workout-title">{currentExercise?.title}</h2>
           <p className="path-workout-desc">{currentExercise?.description}</p>
+          <div className="path-understand"><span className="path-understand-num">1</span><p><strong>Il tuo compito:</strong> {guide?.intro}</p></div>
           <div className="flex flex-wrap gap-2 mt-5"><span className="path-pill"><Clock3 size={15}/>{currentExercise?.minutes} min circa</span><span className="path-pill"><Target size={15}/>Un solo passo oggi</span></div>
-          <div className="path-fallback"><strong>Se oggi è troppo:</strong> {currentExercise?.fallback}</div>
-          <div className="path-verify"><BookOpenCheck size={19}/><span><strong>Verifica:</strong> {currentExercise?.verify}</span></div>
+          {guide&&<div className="path-guide">
+            <div className="path-guide-heading"><span className="path-guide-number">2</span><div><p className="eyebrow">COME SVOLGERLO</p><h3>Segui questi 3 passaggi</h3></div></div>
+            <ol className="path-guide-steps">{guide.steps.map((step,index)=><li key={index}><span>{index+1}</span><p>{step}</p></li>)}</ol>
+            {guide.example&&<details className="path-example"><summary>Mostrami un esempio pratico</summary><p>{guide.example}</p></details>}
+            <div className="path-easier"><div><strong>Hai poco tempo o ti sembra troppo?</strong><p>{currentExercise?.fallback}</p></div><button type="button" aria-pressed={shortVersion} onClick={()=>{setShortVersion(v=>!v);setLocalError('')}} className={shortVersion?'path-easier-toggle active':'path-easier-toggle'}>{shortVersion?'Versione breve attiva':'Usa versione breve'}</button></div>
+          </div>}
+          <div className="path-verify"><BookOpenCheck size={19}/><span><strong>Come capisci se hai fatto il passo:</strong> {currentExercise?.verify}</span></div>
           {isAlcohol(selectedProgram.category)&&<div className="path-caution mt-5"><ShieldAlert size={18}/><p>{alcoholNotice}</p></div>}
           {todayLog?<div className="path-completed"><CheckCircle2 size={21}/><div><strong>Check-in registrato: {outcomes[todayLog.outcome]}</strong><p>Domani Evolve proporrà l’esercizio successivo. Puoi modificare la valutazione di oggi.</p></div></div>:null}
-          {selectedProgram.status==='active'?<div className="path-actions">
-            <label className="text-sm font-semibold">Nota breve (facoltativa)<textarea className="field mt-2" rows={2} maxLength={500} value={note} onChange={e=>setNote(e.target.value)} placeholder="Cosa ha funzionato? Cosa era difficile?"/></label>
-            <div className="path-buttons"><button disabled={busy} onClick={()=>call('/api/programs/checkin','POST',{programId:selectedProgram.id,outcome:'done',note})} className="btn"><CheckCircle2 size={17} className="inline mr-2"/>Fatto</button><button disabled={busy} onClick={()=>call('/api/programs/checkin','POST',{programId:selectedProgram.id,outcome:'difficult',note})} className="btn-secondary">Troppo difficile</button><button disabled={busy} onClick={()=>call('/api/programs/checkin','POST',{programId:selectedProgram.id,outcome:'skipped',note})} className="btn-secondary">Non oggi</button></div>
+          {selectedProgram.status==='active'?<div className="path-actions" id="exercise-fields">
+            <div className="path-guide-heading"><span className="path-guide-number">3</span><div><p className="eyebrow">METTILO IN PRATICA</p><h3>Registra quello che hai fatto</h3></div></div>
+            {guide&&<p className="path-form-instruction">{guide.prompt}</p>}
+            {localError&&<div className="path-inline-alert" role="alert">{localError}</div>}
+            {guide&&guide.fields.length>0&&<div className="path-answer-grid">{guide.fields.map((field,index)=><label className="path-answer" key={field.label}><span>{field.label}{(needed===0||index>=needed)&&<small> · facoltativo</small>}</span><textarea className="field" rows={2} value={answers[field.label]??''} maxLength={field.maxLength??180} placeholder={field.placeholder} onChange={e=>{setAnswers(prev=>({...prev,[field.label]:e.target.value}));if(localError)setLocalError('')}}/></label>)}</div>}
+            <label className="path-note-label">Una riflessione in più (facoltativa)<textarea className="field mt-2" rows={2} maxLength={160} value={note} onChange={e=>setNote(e.target.value)} placeholder="Cosa ha funzionato? Cosa vorresti rendere più facile?"/></label>
+            <div className="path-result-footer"><div><strong>Hai provato l’esercizio?</strong><p>Scegli come è andata. Se non è riuscito, il percorso si adatta: non perdi i progressi.</p></div><small className={payloadNote.length>500?'path-over-limit':''}>{payloadNote.length}/500 caratteri salvabili</small></div>
+            <div className="path-buttons"><button type="button" disabled={busy} onClick={()=>saveOutcome('done')} className="btn"><CheckCircle2 size={17} className="inline mr-2"/>{busy?'Salvataggio…':'Ho svolto l’esercizio'}</button><button type="button" disabled={busy} onClick={()=>saveOutcome('difficult')} className="btn-secondary">Troppo difficile</button><button type="button" disabled={busy} onClick={()=>saveOutcome('skipped')} className="btn-secondary">Non oggi</button></div>
           </div>:<div className="path-paused"><Pause size={18}/><span>Percorso {selectedProgram.status==='paused'?'in pausa':'completato'}.</span></div>}
         </section>
         <section className="panel">
@@ -101,6 +123,11 @@ export function ProgramsClient({programs,checkins,day,error,mode}:Props){
         <section className="panel"><div className="flex items-center justify-between gap-2"><h3 className="font-bold text-lg">Diario degli esercizi</h3><span className="muted text-xs">{currentLogs.length} check-in</span></div><div className="path-history">{currentLogs.slice(0,7).map(c=><div key={c.id} className="path-history-item"><span>{new Date(c.day+'T12:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short'})}</span><strong>{outcomes[c.outcome]}</strong><span className="muted">{c.note||'Nessuna nota'}</span></div>)}{currentLogs.length===0&&<p className="muted text-sm py-3">Non hai ancora registrato esercizi. Il primo check-in sarà qui.</p>}</div></section>
       </div>}
     </div>}
+    {programs.length>0&&<section className="path-summary path-summary-bottom" aria-label="Riepilogo progressi">
+      <div className="path-stat"><span>Percorsi attivi</span><strong>{active.length}</strong><small>Il tuo impegno attuale</small></div>
+      <div className="path-stat"><span>Allenamenti completati</span><strong>{totalDone}</strong><small>Risultati salvati</small></div>
+      <div className="path-stat"><span>Check-in oggi</span><strong>{statusCount}<small>/{active.length}</small></strong><small>Inclusi esercizi da riprovare</small></div>
+    </section>}
     <p className="notice">Evolve registra solo le azioni che confermi. Non formula diagnosi, non prescrive dimagrimenti o riduzioni di alcol e non garantisce risultati. L’allenamento può essere sospeso o adattato.</p>
   </div>
 }
