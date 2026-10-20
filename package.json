@@ -1,6 +1,6 @@
 {
   "name": "evolve-coach",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,7 +14,7 @@
     "test:all": "npm run test:ux && npm run test:plan && npm run test:life",
     "test:daily": "node tests/check-daily.mjs",
     "test:release": "node tests/check-release.mjs && npm run test:plan && npm run test:life && npm run test:daily && npm run test:coach",
-    "test:coach": "node tests/check-coach.mjs"
+    "test:coach": "node tests/check-coach.mjs && node tests/check-coach-resilience.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",

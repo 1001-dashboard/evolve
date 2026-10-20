@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+const source = (f)=>readFileSync(f,'utf8');
+function loadTS(path){
+ const output=ts.transpileModule(source(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},reportDiagnostics:true});
+ assert(!output.diagnostics?.some(x=>x.category===ts.DiagnosticCategory.Error),`Invalid TS ${path}`);
+ const exp={};const context={exports:exp,module:{exports:exp},require:()=>{throw Error('unexpected runtime import')}};
+ vm.runInNewContext(output.outputText,context);
+ return exp;
+}
+const {candidateGeminiModels,DEFAULT_GEMINI_MODEL}=loadTS('src/lib/ai/gemini-models.ts');
+const {makeFallbackDraft}=loadTS('src/lib/coach/fallback.ts');
+const {shouldBridgeToAction,operationalBridge}=loadTS('src/lib/ai/action-bridge.ts');
+assert.equal(DEFAULT_GEMINI_MODEL,'gemini-3.5-flash-lite');
+assert.deepEqual(Array.from(candidateGeminiModels(undefined)),['gemini-3.5-flash-lite']);
+assert.deepEqual(Array.from(candidateGeminiModels('gemini-2.5-flash')),['gemini-2.5-flash','gemini-3.5-flash-lite']);
+assert.deepEqual(Array.from(candidateGeminiModels('models/gemini-3.5-flash-lite')),['gemini-3.5-flash-lite']);
+const ibiza=makeFallbackDraft(['Mi sento a disagio per Ibiza, ho paura del ruolo di station manager.','Il lavoro, casa, personale che parla spagnolo.','Sono stanco e disilluso.'],15);
+assert(ibiza.items.length>=2&&ibiza.items.length<=4);
+assert(ibiza.items.some(x=>x.title.includes('ruolo')));
+assert(ibiza.items.some(x=>x.title.includes('lingua')));
+assert(ibiza.items.every(x=>x.minutes>=1&&x.minutes<=15));
+assert(ibiza.items.every(x=>x.cadence!=='weekly'||x.days.length>0));
+const workout=makeFallbackDraft(['Voglio organizzare il vogatore e la dieta con meal prep'],10);
+assert(workout.items.some(x=>x.kind==='routine'));
+assert(workout.items.some(x=>x.kind==='alimentazione'));
+const alcohol=makeFallbackDraft(['Bevo molta birra ogni giorno e voglio ridurre'],5);
+assert(alcohol.items.some(x=>/sanitari|sanitario/.test(x.description)));
+assert(!alcohol.items.some(x=>/da [0-9]+ a [0-9]+ (?:birre|drink)/.test(x.description)));
+assert.equal(shouldBridgeToAction('Ti va di parlarne ancora?',4,'Ho paura di non farcela a Ibiza'),true);
+assert.equal(shouldBridgeToAction('Primo passo: verifica le responsabilità.',4,'Ibiza'),false);
+assert.equal(shouldBridgeToAction('Hai pensieri di farti del male?',3,'Ho pensieri suicidi'),false);
+assert(operationalBridge(['Ho paura del lavoro a Ibiza']).includes('responsabilità concrete'));
+const none=makeFallbackDraft(['Ho un nuovo problema'],5);
+assert(none.items.length>=1);
+for(const file of ['src/app/api/coach/plan-draft/route.ts','src/app/api/coach/route.ts','src/components/coach-client.tsx','src/lib/ai/coach-prompt.ts','src/lib/ai/action-bridge.ts']){
+ const output=ts.transpileModule(source(file),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022},reportDiagnostics:true});
+ assert(!output.diagnostics?.some(x=>x.category===ts.DiagnosticCategory.Error),file);
+}
+const draftRoute=source('src/app/api/coach/plan-draft/route.ts');
+const client=source('src/components/coach-client.tsx');
+const coach=source('src/app/api/coach/route.ts');
+assert(draftRoute.includes('candidateGeminiModels(process.env.GEMINI_MODEL)'));
+assert(draftRoute.includes("source:'rules'")&&draftRoute.includes("source:'ai'"));
+assert(draftRoute.includes("if(res.status===404)continue"));
+assert(client.includes("onClick={approve}")&&client.includes("Conferma e attiva"));
+assert(client.includes("setDraftNotice(v.source==='rules'"));
+assert(coach.includes('practicalGuard')&&coach.includes('userTurns>=2'));
+console.log('Evolve 1.1.1: Gemini candidates, fallback plans, safety, confirmation UI and TS syntax OK');

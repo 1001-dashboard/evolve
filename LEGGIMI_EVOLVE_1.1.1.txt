@@ -1,0 +1,37 @@
+EVOLVE 1.1.1 - COACH OPERATIVO: RIPARAZIONE GEMINI 404 + RISPOSTE CONCRETE
+
+COSA RISOLVE
+1) "Generazione del piano non disponibile (HTTP 404)" era una risposta dell'API Gemini, non una rotta Aruba mancante.
+2) Il generatore piano usa prima GEMINI_MODEL, come la chat. Se 404 prova gemini-3.5-flash-lite. Se non puo' utilizzare Gemini, mostra una BOZZA DI RISERVA GENERATA DA REGOLE e avvisa chiaramente l'utente.
+3) Il Coach riceve istruzioni piu' operative; dopo domande ripetitive senza passo concreto il server fornisce un ponte verso verifiche pratiche. Attenzione: queste non sostituiscono interventi clinici.
+4) Le attivita' restano modificabili e NON vengono salvate finche' non premi "Conferma e attiva".
+5) Messaggio visibile quando una proposta non proviene dall'AI.
+
+INSTALLAZIONE DELLA PATCH
+- Fai il backup del progetto.
+- Estrai il contenuto dello ZIP PATCH nella cartella git del progetto, sovrascrivendo i file.
+- Non eliminare .git o .env.local.
+- Nella cartella del progetto:
+  npm install
+  npm run test:release
+  npm run test:ux
+  npm run build
+- SOLO SE TUTTI I CONTROLLI PASSANO:
+  git add -A
+  git commit -m "Fix Evolve 1.1.1 Coach e generazione piano"
+  git push origin main
+- Attendi Vercel Ready, poi ricarica www.danilorusciano.it/evolve/coach.
+
+VERIFICHE IMPORTANTI
+- Controlla Vercel Environment Variables: GEMINI_MODEL deve essere un modello accessibile con la TUA API key. Modello consigliato nella correzione: gemini-3.5-flash-lite.
+- Non incollare la API key nella chat o nello ZIP.
+- Premi "Prepara il piano" nella conversazione esistente su Ibiza: se il provider risponde dovrebbe apparire una proposta AI. Se il provider non e' accessibile deve apparire una bozza esplicitamente etichettata come non AI, non piu' un blocco 404.
+- Controlla i campi della proposta, modificane uno e approva solo se ti convince. Verifica salvataggio in "Il mio piano".
+- Nessuna nuova migrazione SQL rispetto alla 1.1, che richiede comunque la migrazione 202610200001_coach_operativo.sql gia' prevista.
+- Non toccare proxy Aruba, .htaccess o route /evolve.
+
+STATO TEST
+- npm run test:release superato con TypeScript locale per gli script (test statici e logici)
+- node tests/check-ux.mjs superato
+- sintassi TS/TSX verificata, nessun errore sintattico
+- NON verificati: npm run build completo, Gemini reale con chiave, Supabase reale, deploy Vercel.
