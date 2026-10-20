@@ -23,6 +23,12 @@ export async function POST(req:NextRequest){
  const sb=await serverSupabase();const {data:{user}}=await sb.auth.getUser();
  if(!user) return NextResponse.json({error:'Effettua l’accesso.'},{status:401});
  const {error}=await sb.from('evolve_life_profiles').upsert({...parsed.data,user_id:user.id,updated_at:new Date().toISOString()},{onConflict:'user_id'});
- if(error) return NextResponse.json({error:'Salvataggio non riuscito. Hai eseguito la migrazione SQL della v0.7?'},{status:500});
+ if(error){
+  const missing=error.code==='42P01'||error.code==='PGRST205'||error.code==='PGRST204';
+  const message=missing?'La struttura del Profilo non è aggiornata. Controlla la migrazione SQL 202610190003_life_coaching.sql.':
+   error.code==='42501'?'Permesso negato da Supabase: verifica le policy RLS del Profilo.':
+   'Supabase ha rifiutato il salvataggio del Profilo.';
+  return NextResponse.json({error:`${message} Codice: ${error.code||'sconosciuto'}.`},{status:500});
+ }
  return NextResponse.json({ok:true});
 }

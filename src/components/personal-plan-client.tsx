@@ -1,7 +1,7 @@
 'use client';
 import {useState} from 'react';
 import Link from 'next/link';
-import {ArrowRight,CalendarCheck2,CheckCircle2,Clock3,Compass,Flag,Lightbulb,Pencil,RefreshCw,ShieldAlert,Target} from 'lucide-react';
+import {ArrowRight,CalendarCheck2,CheckCircle2,Clock3,Compass,Flag,Lightbulb,Pencil,RefreshCw,ShieldAlert} from 'lucide-react';
 import {apiUrl} from '@/lib/config';
 import {alcoholNotice, categories, isAlcohol, type Program, type Checkin} from '@/lib/programs';
 import {choicesFor,focusOptions,periodStart,scheduleFor,planTip,type PlanProfile,type PlanReview,type Focus,type PreferredTime} from '@/lib/personal-plan';

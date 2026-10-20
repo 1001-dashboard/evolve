@@ -1,0 +1,32 @@
+EVOLVE 1.0.4 — PATCH DIARIO ALLENAMENTI RETRODATATI
+
+Che cosa cambia:
+- Selettore data e ora per tutte le attivita (vogatore, kettlebell, camminata, sacco, ecc.).
+- Pulsanti Adesso e Ieri. Con Ieri l'ora viene inizialmente impostata all'ora corrente: correggila se necessario.
+- Salvataggio di un timestamp ISO con fuso orario preservato tramite conversione UTC.
+- Rifiuto di date future sia sul client sia sul server.
+- Storico che mostra data e ora, non soltanto il giorno.
+- Compatibilita con le vecchie registrazioni: occurred_at e gia presente nella tabella evolve_workouts.
+
+INSTALLAZIONE
+1. Fai una copia di sicurezza della cartella evolve del tuo PC.
+2. Estrai lo ZIP nella cartella principale del repository, mantenendo le directory src/...
+   e sovrascrivendo ESCLUSIVAMENTE i due file indicati.
+3. Apri PowerShell/CMD nella cartella del progetto ed esegui:
+   npm run test:release
+   npm run build
+4. Se la build e i test passano:
+   git add src/components/training-client.tsx src/app/api/training/route.ts
+   git commit -m "Evolve 1.0.4: allenamenti retrodatati"
+   git push origin main
+5. Attendi Vercel Ready. Apri /evolve/allenamento e prova Ieri.
+
+NON serve eseguire una nuova migrazione Supabase o modificare Aruba.
+
+Verifiche effettuate in preparazione:
+- Test di regressione npm run test:release, npm run test:ux, npm run test:daily: PASS.
+- Parsing sintattico TypeScript/TSX dei due file: PASS.
+- Build completa Next.js: NON ESEGUITA (dipendenze non installate nell'ambiente).
+
+Nota: la patch consente di creare allenamenti retrodatati. Non introduce ancora la modifica
+retroattiva di una sessione gia salvata.

@@ -1,3 +1,9 @@
+# EVOLVE 1.1 — guida rapida
+
+**Inizia da [`README_EVOLVE_1.1.md`](README_EVOLVE_1.1.md)** per nuova migrazione, test e pubblicazione. La guida qui sotto documenta le versioni precedenti.
+
+---
+
 # Evolve v0.7 — Adaptive Life Coaching
 
 Una base applicativa Next.js 15 / Supabase / Gemini per sostenere miglioramenti concreti nella vita quotidiana. L'obiettivo non è una chat motivazionale: il prodotto combina un profilo personale, attività piccole e verificabili, scenari preparatori e percorsi già presenti nelle versioni v0.4–v0.6.

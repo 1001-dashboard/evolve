@@ -1,0 +1,32 @@
+EVOLVE 1.0.3 — CORREZIONE GRAFICA PROFILO
+
+Problema risolto: nella sezione "Su quali aree vuoi lavorare?" checkbox,
+titoli e descrizioni si sovrapponevano a causa di regole CSS legacy
+in conflitto con il layout piu recente.
+
+LA PATCH CONTIENE SOLTANTO:
+- src/components/life-profile-client.tsx
+- src/app/globals.css
+
+COME APPLICARLA
+1) Esegui un backup della cartella locale evolve (o usa git).
+2) Estrai la patch nella cartella radice del tuo repository evolve.
+   Sovrascrivi solo i due file omonimi, rispettando le cartelle src/.
+3) In PowerShell dalla cartella del repository:
+     npm run build
+   Solo se passa:
+     git add src/components/life-profile-client.tsx src/app/globals.css
+     git commit -m "Fix layout opzioni profilo Evolve"
+     git push origin main
+4) Quando Vercel mostra Ready, premi Ctrl+Shift+R sulla pagina /evolve/profilo.
+
+Non devi eseguire SQL, cambiare Aruba, eliminare file o riavviare Supabase.
+La patch e stata costruita confrontando gli SHA degli stessi due file
+attualmente presenti nel repository GitHub main, per evitare patch fuori versione.
+
+TEST
+- Sostituzione JSX con controllo della corrispondenza esatta: OK
+- Input checkbox accessibile tramite label associata e selezione da tastiera: struttura OK
+- Layout CSS isolato dalle precedenti .life-area, responsive: struttura OK
+- Sintassi TSX: da testare con npm run build sul computer
+- Browser/Vercel reali: non testati in questo ambiente

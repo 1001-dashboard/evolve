@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react';
 import Link from 'next/link';
-import {ArrowRight,ArrowUpRight,BookOpenCheck,CheckCircle2,Clock3,Footprints,Languages,Pause,Play,Plus,RefreshCw,ShieldAlert,Sparkles,Target,TrendingUp,Utensils,Workflow} from 'lucide-react';
+import {ArrowRight,ArrowUpRight,BookOpenCheck,CheckCircle2,Clock3,Footprints,Languages,Pause,Play,Plus,ShieldAlert,Sparkles,Target,TrendingUp,Utensils,Workflow} from 'lucide-react';
 import {alcoholNotice,categories,exerciseFor,isAlcohol,type Category,type Checkin,type Outcome,type Program} from '@/lib/programs';
 import {apiUrl} from '@/lib/config';
 import {countAnswered,formatGuidedNote,guideFor,requiredAnswers} from '@/lib/exercise-guide';
