@@ -5,6 +5,7 @@ export type LifeProfile = {
   main_goal: string; life_areas: LifeArea[]; minutes_per_day: number;
   preferred_time: 'mattina' | 'pranzo' | 'sera' | 'flessibile';
   support_style: 'pratico' | 'graduale' | 'equilibrato';
+  coach_context_opt_in: boolean;
   morning_anchor: string; current_context: string; updated_at: string;
 };
 export type DailyState = {

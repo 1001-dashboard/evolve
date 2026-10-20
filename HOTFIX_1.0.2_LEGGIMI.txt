@@ -1,0 +1,20 @@
+EVOLVE 1.0.2 — CORREZIONE ERRORI TYPECHECK DEL PROFILO
+
+Causa confermata: due definizioni di LifeProfile non allineate in
+src/lib/life/types.ts e src/lib/life-engine.ts.
+
+La migrazione SQL 003 include gia coach_context_opt_in, percio NON devi rieseguire SQL.
+
+Modifiche:
+- src/lib/life/types.ts: aggiunge coach_context_opt_in:boolean al tipo canonico.
+- src/lib/life-engine.ts: riutilizza i tipi canonici anziche duplicarli.
+- tests/check-release.mjs: impedisce regressioni sul campo e duplicazioni.
+
+INSTALLAZIONE PATCH
+1. Copia i tre file presenti nello zip PATCH nella stessa posizione del tuo progetto.
+2. Esegui: npm run test:release
+3. Esegui: npm run build (DEVE TERMINARE SENZA ERRORI prima del push)
+4. Pubblica: git add -A && git commit -m "Fix Evolve 1.0.2 tipi profilo" && git push origin main
+
+Nessun intervento su Supabase, Aruba, .htaccess o variabili Vercel.
+Non includere nell'archivio .git o .env.local.

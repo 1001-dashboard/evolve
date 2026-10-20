@@ -1,13 +1,8 @@
 /** Evolve v0.7: deterministic, auditable suggestions. No clinical inference. */
-export type LifeArea='benessere'|'lavoro'|'relazioni'|'crescita';
-export type LifeProfile={
- user_id:string;display_name:string;birth_date:string|null;height_cm:number|null;weight_kg:number|null;
- main_goal:string;life_areas:LifeArea[];minutes_per_day:number;preferred_time:'mattina'|'pranzo'|'sera'|'flessibile';
- support_style:'pratico'|'graduale'|'equilibrato';coach_context_opt_in:boolean;morning_anchor:string;current_context:string;updated_at?:string
-};
-export type DailyState={day:string;energy:number;mood:number;sleep_hours:number|null;available_minutes:number;note:string};
-export type Scenario={id:string;title:string;context:'lavoro'|'casa'|'relazioni'|'benessere'|'altro';trigger_text:string;response_text:string;small_step:string;fallback_text:string;active:boolean;created_at:string};
-export type DailyAction={day:string;action_key:string;status:'done'|'skipped'};
+// Single source of truth: data loader, UI and planner use exactly these types.
+import type {LifeArea,LifeProfile,DailyState,LifeScenario as Scenario} from './life/types';
+export type {LifeArea,LifeProfile,DailyState,DailyAction} from './life/types';
+export type {LifeScenario as Scenario} from './life/types';
 export type CoachAction={key:string;eyebrow:string;title:string;detail:string;short:string;minutes:number;href?:string;priority:'core'|'optional'};
 
 export const LIFE_AREAS: {id:LifeArea;label:string;description:string}[]=[

@@ -8,3 +8,11 @@ const dailyPage=read('src/app/(app)/giornata/page.tsx');
 assert(/state\s*:\s*life\.checkin/.test(dailyPage),'Giornata must pass daily check-in as planner state');
 assert(!dailyPage.includes('makeDayPlan({...life,'),'Do not spread loadLife directly into makeDayPlan');
 console.log('Planner input mapping regression: OK');
+
+// Regression: one canonical LifeProfile definition, including explicit AI consent.
+const central=read('src/lib/life/types.ts');
+const engine=read('src/lib/life-engine.ts');
+assert(central.includes('coach_context_opt_in: boolean;'),'Canonical LifeProfile must declare AI opt-in');
+assert(engine.includes("export type {LifeArea,LifeProfile,DailyState,DailyAction} from './life/types'"),'Life engine must re-export canonical models');
+assert(!engine.includes('export type LifeProfile={'),'Do not duplicate LifeProfile in life-engine');
+console.log('LifeProfile canonical typing regression: OK');
