@@ -1,3 +1,9 @@
+# EVOLVE 1.2 — PARTI QUI
+
+**Apri per primo `README_EVOLVE_1.2_UX.md`**. La versione 1.2 semplifica Coach → Proposta → Piano → Oggi e aggiunge la pagina «Come funziona?» senza eliminare gli strumenti precedenti. Non servono migrazioni SQL nuove se la 1.1.1 è già configurata. Esegui la build prima del push.
+
+---
+
 # EVOLVE 1.1 — guida rapida
 
 **Inizia da [`README_EVOLVE_1.1.md`](README_EVOLVE_1.1.md)** per nuova migrazione, test e pubblicazione. La guida qui sotto documenta le versioni precedenti.

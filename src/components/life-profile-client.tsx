@@ -15,9 +15,10 @@ export function LifeProfileClient({initial,error}:{initial:LifeProfile|null;erro
   if(!response.ok)throw new Error(result.error||'Impossibile salvare il profilo.');setSaved(true);setMessage('Profilo salvato. Il piano quotidiano userà queste preferenze.');
  }catch(e){setMessage(e instanceof Error?e.message:'Salvataggio non riuscito.')}finally{setBusy(false)}}
  return <div className="space-y-5">
-  <header className="path-header"><p className="eyebrow mb-2">EVOLVE · IL TUO PUNTO DI PARTENZA</p><h1 className="text-3xl md:text-4xl font-bold">Il tuo profilo personale</h1><p className="muted mt-2">Un solo profilo, obiettivi diversi. Fornisci soltanto ciò che vuoi utilizzare per personalizzare il piano.</p></header>
+  <header className="path-header"><p className="eyebrow mb-2">EVOLVE · IL TUO PUNTO DI PARTENZA</p><h1 className="text-3xl md:text-4xl font-bold">Diamo a Evolve il tuo punto di partenza</h1><p className="muted mt-2">Si configura una volta e puoi aggiornarlo quando cambia qualcosa. Serve a suggerire passi realistici, non a giudicarti. Compila solo ciò che vuoi condividere.</p></header>
   {error&&<p className="path-alert" role="alert">{error}</p>}
   <div className="path-inline-alert" style={{background:'#eef9f8'}}><LockKeyhole size={18}/><span>Le informazioni sul benessere sono facoltative e archiviate nel tuo account Supabase. Solo se lo autorizzi, il Coach AI userà le preferenze generali. I dati fisici e i check-in restano esclusi. Non inserire diagnosi o informazioni sanitarie che non vuoi conservare.</span></div>
+  <div className="evolve-profile-help"><strong>Da dove comincio?</strong><span>1. Inserisci le informazioni che vuoi usare · 2. Scegli le aree su cui lavorare · 3. Salva · 4. Apri il Coach e descrivi il primo problema.</span></div>
   <form onSubmit={submit} className="space-y-5">
    <section className="panel"><div className="flex gap-2 items-center mb-4"><UserRound size={22}/><h2 className="text-xl font-bold">1. Conosciamoci</h2></div>
     <div className="life-fields"><label><span>Come vuoi essere chiamato?</span><input className="field" maxLength={80} value={form.display_name} onChange={e=>change('display_name',e.target.value)} placeholder="Nome o soprannome"/></label>

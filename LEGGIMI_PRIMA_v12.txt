@@ -1,0 +1,11 @@
+EVOLVE 1.2 - GUIDA RAPIDA
+
+1) NON TOCCARE ARUBA O SUPABASE per questo aggiornamento.
+2) Fai una copia della cartella locale Evolve.
+3) Estrai lo ZIP nella cartella del repo senza cancellare .git o .env.local.
+4) Esegui: npm install, npm run test:release, npm run test:ux, npm run typecheck, npm run build.
+5) Se TUTTO passa: git add -A; git commit -m "Evolve 1.2 UX"; git push origin main.
+6) Dopo Ready: https://danilorusciano.it/evolve/guida
+7) Coach: scrivi un problema, Crea una proposta, modificala, Conferma e attiva.
+
+Per dettagli: README_EVOLVE_1.2_UX.md.
