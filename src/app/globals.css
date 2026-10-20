@@ -216,3 +216,77 @@ body{line-height:1.5}
 /* Evolve 1.0: unified workout and meal prep modules */
 .v1-stack{display:grid;gap:20px;max-width:1240px;margin:auto}.v1-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.v1-heading h1{font-size:clamp(27px,3.5vw,41px);font-weight:800;letter-spacing:-1px;margin:6px 0}.v1-heading p{max-width:700px}.v1-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.v1-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.v1-stack .panel{min-width:0}.v1-stack h2{font-size:20px;font-weight:800;margin-bottom:17px;display:flex;align-items:center;gap:10px}.v1-stack h3{font-weight:750;margin:10px 0}.v1-stack label{display:grid;gap:7px;font-size:13px;font-weight:650}.v1-stack .field{font-size:15px}.v1-small{font-size:12px}.v1-label{font-weight:750;font-size:13px;margin:15px 0 7px}.v1-tags,.v1-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:13px 0}.v1-stack .v1-check{display:inline-flex;gap:8px;align-items:center;border:1px solid #dbe8ec;background:#f5fafb;border-radius:12px;padding:10px 12px;font-size:13px}.v1-check input{accent-color:#087c83;width:16px;height:16px}.v1-meals{display:grid;grid-template-columns:repeat(auto-fit,minmax(218px,1fr));gap:12px}.v1-meal{border:1px solid #dbe8ec;border-radius:16px;padding:16px;background:#fcfefe}.v1-meal h3{font-size:16px;min-height:45px}.v1-meal details{margin-top:12px;font-size:13px}.v1-meal summary{color:#075b69;font-weight:700;cursor:pointer}.v1-meal ol{padding-left:20px;margin-top:8px}.v1-meal li{margin:7px 0}.v1-shop{display:flex!important;grid-template-columns:none!important;align-items:center;gap:10px!important;padding:10px 0;border-bottom:1px solid #edf2f5}.v1-shop input{width:17px;height:17px}.v1-shop span{flex:1}.v1-shop strong{font-variant-numeric:tabular-nums}.v1-list{padding-left:20px}.v1-list li{margin:10px 0}.v1-safe{border:1px solid #c9e4df;border-radius:14px;background:#f1faf7;padding:14px;margin:14px 0;font-size:13px;line-height:1.55}.v1-safe p{margin-top:8px}.v1-metric{font-size:32px;font-weight:850}.v1-error{color:#ae2535;margin:10px 0}.v1-success{color:#087651;margin:10px 0}.v1-table-wrap{overflow-x:auto}.v1-table{width:100%;border-collapse:collapse;font-size:13px}.v1-table th,.v1-table td{padding:12px 9px;text-align:left;border-bottom:1px solid #e2ebf0;white-space:nowrap}.v1-table th{color:#56687a}.v1-stack button{display:inline-flex;justify-content:center;align-items:center;gap:7px}@media(max-width:850px){.v1-grid2,.v1-grid3{grid-template-columns:1fr}.v1-heading{align-items:flex-start}}
 @media print{.sidebar,.v1-heading .btn-secondary,.v1-actions,button{display:none!important}.main-content{padding:0!important}.panel{box-shadow:none!important}}
+
+
+/* EVOLVE 1.0.3 — Profile checkbox cards: isolated from legacy .life-area rules.
+   Fixes overlapping labels and absolutely positioned checkbox inputs. */
+.profile-area-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.profile-area-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  min-height: 100px;
+  padding: 18px 20px;
+  background: #f8fbfd;
+  border: 1px solid #d1e1e9;
+  border-radius: 16px;
+  color: #18374f;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.profile-area-card:hover {
+  border-color: #73bcb9;
+  background: #f2faf9;
+}
+.profile-area-card.is-selected {
+  background: #eaf8f6;
+  border-color: #0c9994;
+}
+.profile-area-card:focus-within {
+  outline: 3px solid #0a9c9c;
+  outline-offset: 2px;
+}
+.profile-area-card > input[type="checkbox"] {
+  appearance: auto;
+  position: static;
+  display: block;
+  flex: 0 0 19px;
+  width: 19px;
+  height: 19px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: #087f82;
+  cursor: pointer;
+}
+.profile-area-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.profile-area-copy strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+.profile-area-copy small {
+  display: block;
+  color: #536e80;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+@media (max-width: 720px) {
+  .profile-area-grid { grid-template-columns: minmax(0, 1fr); }
+  .profile-area-card { min-height: 83px; padding: 15px 16px; }
+}
