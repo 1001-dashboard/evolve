@@ -1,0 +1,51 @@
+EVOLVE - PATCH MOBILE 21/10/2026
+================================
+IMPORTANTE: questo ZIP e' un AGGIORNAMENTO MIRATO, non il progetto completo.
+Compatibile con la struttura corrente di Evolve su GitHub (verificata il 21/10).
+Non sostituire l'intera cartella del progetto con una vecchia release.
+
+ERRORE RISOLTO E VERIFICATO
+La regola .path-content a due colonne veniva dichiarata DOPO la media query responsive.
+Su Chrome con larghezza 390px la sezione esercizi era larga solo 114px e la pagina
+aveva overflow orizzontale. Test browser locale: dopo il fix l'esercizio e' 362px,
+senza overflow. Layout desktop 1200px invariato.
+
+ALTRE MIGLIORIE
+- Menu mobile Altro: accesso anche a Allenamento, Meal Prep, Alimentazione,
+  Percorsi, Routine, Scenari, Diario e Profilo.
+- Dopo il login, navigazione a pagina intera verso /evolve/giornata per evitare
+  il passaggio di redirect in-app /oggi -> /giornata durante l'aggiornamento
+  delle sessioni Supabase dietro il reverse proxy Aruba.
+- Schermate di recupero per errori JavaScript imprevisti. Attenzione: non e'
+  possibile affermare che l'eccezione del tuo screenshot sia risolta senza
+  conoscerne lo stack della console browser.
+- Nessuna modifica a SQL, Supabase, Aruba PHP, .htaccess, variabili d'ambiente.
+
+INSTALLAZIONE
+1. Effettua un backup locale del repository attuale e verifica che Git sia pulito.
+2. Estrai questo ZIP nella RADICE del repository locale evolve, sovrascrivendo
+   SOLO i 6 file src inclusi e aggiungendo il test (NON toccare .git o .env.local).
+3. Esegui nel terminale aperto nella directory del progetto:
+      node tests/check-mobile-hotfix.mjs
+      npm run test:release
+      npm run build
+4. Se i comandi sono riusciti:
+      git status
+      git add src/app src/components/sidebar-nav.tsx tests/check-mobile-hotfix.mjs
+      git commit -m "Fix layout mobile Evolve e accesso dopo login"
+      git push origin main
+   ATTENZIONE: verifica git status per evitare di pubblicare file non desiderati.
+5. Attendi Ready su Vercel, poi su Chrome Android apri una nuova scheda in incognito
+   e controlla https://danilorusciano.it/evolve/ (login, oggi, routine, altro).
+
+DIAGNOSI IN CASO DI ERRORE CLIENT
+Il secondo screenshot mostra una eccezione client, ma senza messaggio JS.
+Se ricompare: usa la schermata di recupero, prova a ricaricare e raccogli
+console JavaScript da Chrome desktop (F12 -> Console) o Chrome Android remoto.
+Un cambio CSS non puo' identificare automaticamente l'origine di quel crash.
+
+VERIFICHE SVOLTE NELL'AMBIENTE DI PREPARAZIONE
+- Playwright + Chromium: viewport 360, 390, 768 e 1200 px, 0 overflow dopo patch;
+  la sezione routine passa correttamente da 2 a 1 colonna sotto 1050px.
+- Transpilazione TypeScript dei 5 file .tsx: errori sintattici 0.
+- Build Next.js e test su account autentico Supabase: NON eseguiti.

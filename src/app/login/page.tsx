@@ -1,6 +1,47 @@
-"use client";
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { browserSupabase } from '@/lib/supabase/browser';
-export default function Login(){const router=useRouter();const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [loading,setLoading]=useState(false);const [error,setError]=useState('');const [info,setInfo]=useState('');async function submit(mode:'signin'|'signup'){setLoading(true);setError('');setInfo('');const sb=browserSupabase();const result=mode==='signin'?await sb.auth.signInWithPassword({email,password}):await sb.auth.signUp({email,password});setLoading(false);if(result.error){setError(result.error.message);return}if(mode==='signup'&&!result.data.session){setInfo('Controlla la tua email per confermare la registrazione.');return}router.replace('/oggi');router.refresh()}
-return <main className="login-shell"><div className="panel login-card"><h1 className="text-3xl font-bold mb-2">Evolve</h1><p className="muted mb-7">Accedi al tuo percorso personale.</p><form className="grid gap-4" onSubmit={e=>{e.preventDefault();submit('signin')}}><label>Email<input className="field mt-1" type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input className="field mt-1" type="password" required minLength={6} value={password} onChange={e=>setPassword(e.target.value)}/></label>{error&&<p role="alert" className="text-red-300 text-sm">{error}</p>}{info&&<p className="text-emerald-200 text-sm">{info}</p>}<button disabled={loading} className="btn">Accedi</button><button type="button" disabled={loading} className="btn-secondary" onClick={()=>submit('signup')}>Crea account</button></form></div></main>}
+'use client';
+import {useState} from 'react';
+import {browserSupabase} from '@/lib/supabase/browser';
+import {BASE_PATH} from '@/lib/config';
+
+/** Full page redirect avoids client-side RSC navigation immediately after the
+ * auth cookie is created on a PHP-reverse-proxied Next.js subpath. */
+export default function Login(){
+  const [email,setEmail]=useState('');
+  const [password,setPassword]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState('');
+  const [info,setInfo]=useState('');
+
+  async function submit(mode:'signin'|'signup'){
+    if(loading)return;
+    setLoading(true);setError('');setInfo('');
+    try{
+      const sb=browserSupabase();
+      const result=mode==='signin'
+        ?await sb.auth.signInWithPassword({email,password})
+        :await sb.auth.signUp({email,password});
+      if(result.error){setError(result.error.message);return;}
+      if(mode==='signup'&&!result.data.session){
+        setInfo('Controlla la tua email per confermare la registrazione.');
+        return;
+      }
+      // Do not route through /oggi (which redirects again) after sign-in.
+      window.location.replace(BASE_PATH+'/giornata');
+    }catch(e){
+      setError(e instanceof Error?e.message:'Impossibile collegarsi. Riprova.');
+    }finally{setLoading(false);}
+  }
+
+  return <main className="login-shell"><div className="panel login-card">
+    <h1 className="text-3xl font-bold mb-2">Evolve</h1>
+    <p className="muted mb-7">Accedi al tuo percorso personale.</p>
+    <form className="grid gap-4" onSubmit={e=>{e.preventDefault();void submit('signin')}}>
+      <label>Email<input className="field mt-1" type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
+      <label>Password<input className="field mt-1" type="password" required minLength={6} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)}/></label>
+      {error&&<p role="alert" className="text-red-700 text-sm">{error}</p>}
+      {info&&<p role="status" className="text-teal-800 text-sm">{info}</p>}
+      <button type="submit" disabled={loading} className="btn">{loading?'Accesso in corso…':'Accedi'}</button>
+      <button type="button" disabled={loading} className="btn-secondary" onClick={()=>void submit('signup')}>Crea account</button>
+    </form>
+  </div></main>;
+}

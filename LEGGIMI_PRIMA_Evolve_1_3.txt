@@ -1,0 +1,54 @@
+EVOLVE 1.3 - ORCHESTRATOR + REVISIONE SETTIMANALE
+================================================
+PATCH INCREMENTALE per repository 1001-dashboard/evolve, versione 1.2.
+NON E' un progetto completo: estrarre sopra il progetto Git locale attuale.
+NON eliminare .git, .env.local, node_modules o file già presenti.
+NON caricare i file sul sito Aruba: il sito punta a Vercel attraverso il proxy funzionante.
+
+1) BACKUP: copia la cartella locale evolve oppure crea un branch di prova.
+
+2) Estrai lo ZIP nella radice del repository (dove si trova package.json),
+   consentendo la sovrascrittura dei soli file contenuti nella patch.
+
+3) SUPABASE: apri SQL Editor e applica UNA SOLA VOLTA:
+   supabase/migrations/202610210001_orchestrator.sql
+   Crea soltanto evolve_weekly_focus e evolve_weekly_focus_logs con RLS.
+   Non cancella i tuoi dati precedenti.
+
+4) Dalla cartella Git di Evolve apri PowerShell e lancia:
+   npm install
+   node tests/check-orchestrator.mjs
+   npm run test:release
+   npm run typecheck
+   npm run build
+
+   Pubblica SOLO se i comandi terminano tutti senza errori:
+   git status
+   git add -A
+   git commit -m "Evolve 1.3 orchestrator e revisione"
+   git push origin main
+
+5) Dopo Vercel Ready, apri da telefono e PC:
+   https://danilorusciano.it/evolve/giornata
+   https://danilorusciano.it/evolve/revisione
+
+6) TEST FUNZIONALE:
+   - Login, pagina Oggi: appaiono 3 riepiloghi (Coach, allenamenti, pasti).
+   - Controlla che mostrino dati realmente registrati, non percentuali inventate.
+   - Clicca Revisione settimana: suggerimenti con motivazione.
+   - Modifica il testo suggerito e clicca Approva questa modifica.
+   - Torna a Oggi: la priorità compare nella parte iniziale.
+   - Inserisci cosa hai fatto (almeno 3 caratteri) e premi Fatto oggi.
+   - Ricarica: stato salvato, nessun doppio completamento.
+   - Verifica le vecchie pagine Coach, Allenamento, Meal Prep e Piano.
+
+LIMITI DICHIARATI:
+- Consigli di semplice organizzazione basati su regole, non diagnosi o prescrizioni.
+- Risultati ancora osservazionali; dati mancanti non sono prova di inattività.
+- Nessuna modifica automatica alle calorie/diete/schede di allenamento.
+- Non sono stati eseguiti test live sulle credenziali o su Vercel.
+- npm run build non è stato eseguito nell'ambiente di produzione dello ZIP:
+  qui manca l'installazione locale delle dipendenze Next.js; va eseguito sul PC.
+- I suggerimenti sono personalizzabili dall'utente, non generati da Gemini.
+
+Non modificare next.config.ts, .htaccess o il reverse proxy Aruba.

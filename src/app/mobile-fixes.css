@@ -1,0 +1,132 @@
+/* EVOLVE Mobile hotfix 2026-10-21.
+   Loaded AFTER globals.css: fixes the later .path-content desktop override
+   which was defeating the earlier @media (max-width:1050px) rule.
+   This file is intentionally additive and does not modify the design system. */
+
+/* All grid children may shrink without forcing a horizontal scroll. */
+.app-frame, .workspace, .main-content,
+.path-page, .path-content, .path-list, .path-workout,
+.life-page, .life-day-layout, .life-stack,
+.plan-page, .plan-roadmap,
+.evolve-day-page, .evolve-page-intro {
+  min-width: 0;
+  max-width: 100%;
+}
+.path-content > *, .life-day-layout > *, .life-task-body,
+.path-workout > *, .path-list > * { min-width: 0; }
+.path-list-item strong, .path-workout, .path-guide,
+.path-understand, .path-workout-desc, .life-task-body,
+.life-task-body p, .life-panel { overflow-wrap: anywhere; }
+.field, .path-workout textarea, .life-panel input, .life-panel select,
+.life-panel textarea { max-width: 100%; min-width: 0; }
+img, video, canvas { max-width: 100%; }
+
+/* Tablet: the active routine list MUST sit above the workout. */
+@media (max-width: 1050px) {
+  .path-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start;
+    gap: 16px;
+  }
+  .path-list { position: static; width: 100%; }
+  .path-workout { width: 100%; }
+  .life-day-layout,
+  .life-scenario-grid { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* Phone: one comfortable full-width primary column and accessible actions. */
+@media (max-width: 780px) {
+  .app-frame { display: block; width: 100%; }
+  .workspace { display: block; width: 100%; }
+  .sidebar { display: none; }
+  .mobile-header { display: flex; }
+  .main-content {
+    width: 100%;
+    margin: 0;
+    padding: 16px 14px calc(106px + env(safe-area-inset-bottom));
+  }
+  .path-page { width: 100%; }
+  .path-header { gap: 12px; }
+  .path-header h1 { font-size: clamp(25px, 7.5vw, 33px); line-height: 1.2; }
+  .path-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .path-summary > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .path-stat { min-width: 0; }
+  .path-content { grid-template-columns: minmax(0,1fr) !important; }
+  .path-workout { width: 100%; padding: 18px 15px; border-radius: 17px; }
+  .path-workout-title { font-size: clamp(26px, 7vw, 34px); overflow-wrap: anywhere; }
+  .path-workout-top { gap: 8px; }
+  .path-list { padding: 14px; border-radius: 17px; }
+  .path-list-item { min-width: 0; }
+  .path-guide { max-width: 100%; }
+  .path-history-item { flex-wrap: wrap; }
+  .path-history-item strong { width: auto; }
+  .path-buttons, .path-result-footer { flex-wrap: wrap; }
+  .path-buttons > button { flex-grow: 1; min-height: 44px; }
+  .path-category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .life-page, .life-stack { width: 100%; }
+  .life-day-layout { display: grid; grid-template-columns: minmax(0,1fr) !important; }
+  .life-fields, .life-areas, .life-area-grid, .life-tool-grid,
+  .life-scenarios-list, .life-starter-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .life-panel { padding: 16px; }
+  .life-row-between { gap: 8px; flex-wrap: wrap; }
+  .life-heading h1 { font-size: clamp(24px, 7vw, 33px); }
+  .life-task { min-width: 0; }
+  .plan-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .plan-summary-grid > :last-child:nth-child(odd) { grid-column: 1/-1; }
+  .plan-timeline-item { grid-template-columns: minmax(56px, 72px) 22px minmax(0,1fr); }
+  .mobile-nav {
+    display: flex;
+    min-height: 64px;
+    gap: 2px;
+    padding: 8px 5px max(10px, env(safe-area-inset-bottom));
+  }
+  .mobile-nav .mobile-link { min-width: 0; flex: 1; text-align:center; }
+  .mobile-nav .mobile-link span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mobile-nav .mobile-link[aria-current='page'] { color: #087c82; font-weight: 800; }
+}
+
+@media (max-width: 380px) {
+  .main-content { padding-left: 11px; padding-right: 11px; }
+  .path-workout { padding: 15px 12px; }
+  .path-category-grid { grid-template-columns: minmax(0,1fr); }
+  .plan-summary-grid { grid-template-columns: minmax(0,1fr); }
+  .plan-summary-grid > :last-child { grid-column: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path-workout *, .life-panel * { scroll-behavior: auto !important; }
+}
+
+/* Extra mobile navigation: direct access to the tools hidden by the desktop sidebar. */
+.mobile-tools-panel { display: none; }
+@media (max-width: 780px) {
+  .mobile-nav { z-index: 60; }
+  .mobile-nav .mobile-more-trigger {
+    appearance: none; border: 0; padding: 0; background: transparent;
+    font: inherit; color: #38516a; min-height: 42px; cursor: pointer;
+  }
+  .mobile-nav .mobile-more-trigger[aria-expanded='true'] { color: #087c82; font-weight: 800; }
+  .mobile-tools-panel {
+    position: fixed;
+    display: block;
+    left: 10px; right: 10px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    z-index: 59;
+    max-height: min(68dvh, 590px);
+    overflow-y: auto;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid #d7e8e9;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(13,48,70,.19);
+  }
+  .mobile-tools-heading { display: flex; align-items: center; justify-content:space-between; margin-bottom: 12px; }
+  .mobile-tools-heading strong { font-size: 16px; }
+  .mobile-tools-heading button { border:0; background: #f0f8f9; border-radius: 10px; padding: 9px; display: grid; place-items:center; }
+  .mobile-tools-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .mobile-tool { display: flex; align-items:center; gap: 8px; min-width:0; min-height: 53px; border:1px solid #ddecef; border-radius: 12px; padding: 11px; font-size: 12px; font-weight:700; line-height: 1.3; }
+  .mobile-tool svg { flex-shrink:0; color: #087c82; }
+  .mobile-tool.active { background:#e9f8f7; border-color:#90d5cd; }
+  .mobile-tool span { min-width: 0; overflow-wrap:anywhere; }
+}
