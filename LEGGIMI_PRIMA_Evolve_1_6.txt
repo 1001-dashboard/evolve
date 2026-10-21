@@ -1,0 +1,58 @@
+EVOLVE 1.6 — ADAPTIVE COACHING ENGINE
+====================================
+
+Questa è una PATCH da applicare alla cartella Git aggiornata di Evolve 1.5.1.
+NON è un progetto Next.js completo. Non estrarla su una cartella vuota.
+
+FUNZIONI
+- /evolve/adatta: osservazioni degli ultimi 14 giorni, spiegate con dati tracciabili.
+- Routine rimandate almeno due volte e più spesso completate? Proposta di ridurre
+  il tempo previsto, con anteprima e conferma esplicita.
+- Giorni con energia bassa: invita a considerare il recupero, non prescrive terapie.
+- Meal prep / allenamento: suggerimenti soltanto per ambiti scelti dall'utente e
+  con dati effettivamente disponibili. "Non registrato" non significa "non fatto".
+- Autonomia: rimanda alle impostazioni esistenti, non modifica il livello da sola.
+- Se è già scelto Autonomo, NON propone attività aggiuntive. /adatta resta disponibile.
+- Un adattamento appena approvato non viene riproposto sugli stessi vecchi rinvii.
+
+INSTALLAZIONE
+1) Fai copia della cartella locale del progetto Evolve funzionante.
+2) Estrai qui sopra questo archivio, preservando .git e .env.local.
+3) NON eseguire SQL: utilizza le tabelle già esistenti.
+4) Da PowerShell, nella cartella Evolve:
+
+   npm install
+   node tests/check-adaptive.mjs
+   npm run test:release
+   npm run typecheck
+   npm run build
+
+5) Pubblica SOLO se TUTTI i controlli terminano senza errori:
+
+   git status
+   git add -A
+   git commit -m "Evolve 1.6 Adaptive Coaching Engine"
+   git push origin main
+
+6) Attendi Vercel "Ready". Testa /evolve/adatta e /evolve/giornata
+   su Android (incognito al primo tentativo), verificando salvataggio e sessione.
+
+N.B. Nessuna modifica al proxy Aruba, next.config.ts o ai secret.
+Non sostituisce assistenza psicologica, medica o nutrizionale.
+
+COLLAUDO
+- Un nuovo utente con pochi dati vede suggerimenti minimi, senza diagnosi.
+- Rimanda una routine >5 minuti in due giorni, senza altrettanti completamenti:
+  viene proposta una durata più breve. Approva: cambia SOLO il campo minutes
+  dell'impegno nel Coach, non frequenza o descrizione.
+- Torna su /adatta: i vecchi rinvii non devono provocare una nuova riduzione.
+- Imposta Essenziale: al massimo 1 suggerimento. Imposta Autonomo: nessuno.
+- Entra con il secondo account: non devono apparire i tuoi dati.
+
+STATO DELLE VERIFICHE
+- 56 test locali sulla logica e struttura: superati.
+- Engine TypeScript standalone in modalità strict: superato.
+- CSS testato con Chromium 320, 360, 390, 768 e 1200 px: nessun overflow.
+- Next.js build + Supabase/Auth/Vercel/Aruba reale: DA ESEGUIRE SUL TUO AMBIENTE.
+
+Se il build fallisce, NON fare push. Invia il primo messaggio di errore TypeScript.
