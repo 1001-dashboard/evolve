@@ -24,5 +24,12 @@ const fileMap={first_use_coach:coach,review_before_approval:coach,plan_linking:p
 let checked=0;
 for(const [name,arr] of Object.entries(cases))for(const text of arr){assert(fileMap[name].toLowerCase().includes(text.toLowerCase()),`${name}: missing ${text}`);checked++}
 for(const [r,p] of [['/coach','src/app/(app)/coach/page.tsx'],['/piano','src/app/(app)/piano/page.tsx'],['/giornata','src/app/(app)/giornata/page.tsx'],['/guida','src/app/(app)/guida/page.tsx'],['/profilo','src/app/(app)/profilo/page.tsx'],['/allenamento','src/app/(app)/allenamento/page.tsx'],['/mealprep','src/app/(app)/mealprep/page.tsx']]){assert(existsSync(p),`Missing route ${r}`);checked++}
-assert(nav.includes("href=\"/guida\""));assert(nav.includes('aria-current'));assert(css.includes('@media(max-width:680px)'));assert(css.includes('.coach-next-step'));assert(css.includes('.evolve-guide-directory'));assert(read('next.config.ts').includes("basePath: '/evolve'")); checked+=6;
+// 1.4.1: native links need /evolve prefix to avoid RSC prefetch via PHP proxy.
+assert(nav.includes('href={publicHref("/guida")}') || nav.includes('href="/guida"'));
+assert(nav.includes('aria-current'));
+assert(css.includes('@media(max-width:680px)'));
+assert(css.includes('.coach-next-step'));
+assert(css.includes('.evolve-guide-directory'));
+assert(read('next.config.ts').includes("basePath: '/evolve'"));
+checked+=6;
 console.log(`EVOLVE 1.2 UX: PASS — ${checked} checks for the main journey, links, labels and responsive styles`);

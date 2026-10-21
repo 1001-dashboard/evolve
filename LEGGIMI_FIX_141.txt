@@ -1,0 +1,32 @@
+EVOLVE 1.4.1 — BUILD + NAVIGAZIONE RSC (21 ottobre 2026)
+
+PATCH COMPATIBILE CON EVOLVE 1.4 / repository attuale, NON progetto intero.
+
+1. Fai il backup dell'intero repository locale Evolve (inclusi i tuoi cambiamenti).
+2. Estrai il contenuto di questo ZIP nella cartella del repository, sovrascrivendo i SOLI tre file in src/components/ e il test aggiornato in tests/.
+3. Esegui, in PowerShell aperto nella cartella Evolve:
+
+    node tests/check-hotfix-141.mjs
+    npm run test:release
+    npm run typecheck
+    npm run build
+
+4. SOLO SE TUTTO PASSA, pubblica:
+
+    git status
+    git add src/components/trends-360-client.tsx src/components/sidebar-nav.tsx src/components/evolve-brand.tsx tests/check-hotfix-141.mjs tests/check-usability.mjs
+    git commit -m "Fix TypeScript 1.4 e navigazione compatibile Aruba"
+    git push origin main
+
+5. Aspetta 'Ready' in Vercel. Testa prima Vercel diretto, poi www.danilorusciano.it/evolve/andamento e la navigazione su Coach, Piano, Risultati, Meal Prep.
+
+COSA CORREGGE
+- Build: nel rendering di Andamento, il controllo include 'data' prima di leggere le pesate; evita errore TS18047.
+- Navigazione: i link della sidebar e del logo diventano link HTML con href pubblico /evolve/*; nessun RSC fetch/prefetch automatico per questi link.
+
+LIMITI
+- I link interni dentro altre pagine possono ancora essere Next Link: potrebbero verificarsi errori RSC altrove.
+- Il proxy Aruba PHP rimane una soluzione di compatibilita': non garantisce streaming RSC. La correzione definitiva richiede gestire correttamente le richieste Next Flight o usare un vero reverse proxy.
+- NON e' stata verificata una build completa online con il repository e le credenziali Supabase dell'utente.
+- L'errore classifier.js WebGL (shader) puo' provenire da un'estensione browser; non abbiamo prove sia generato da Evolve.
+- Nessuna migrazione SQL richiesta; non toccare Aruba o Supabase per questo hotfix.

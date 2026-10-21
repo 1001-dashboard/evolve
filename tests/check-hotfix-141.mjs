@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const trends=fs.readFileSync('src/components/trends-360-client.tsx','utf8');
+const nav=fs.readFileSync('src/components/sidebar-nav.tsx','utf8');
+const brand=fs.readFileSync('src/components/evolve-brand.tsx','utf8');
+assert(trends.includes('{data&&current&&<>'), 'Guardia null su dati assente');
+assert(!trends.includes('{current&&<>'), 'Guardia precedente ancora presente');
+assert(nav.includes('href={publicHref(url)}'), 'Link sidebar non pienamente qualificati');
+assert(!nav.includes("from 'next/link'"), 'La sidebar usa ancora Link con prefetch RSC');
+assert(brand.includes('href={destination}'), 'Link logo non nativo');
+assert(!brand.includes("from 'next/link'"), 'Il logo usa ancora Link con prefetch RSC');
+console.log('Evolve 1.4.1: controlli statici PASSATI');

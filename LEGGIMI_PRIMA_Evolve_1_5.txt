@@ -1,0 +1,48 @@
+EVOLVE 1.5 — SMART ONBOARDING & AUTONOMIA
+=========================================
+
+CONTENUTO
+- Patch ADDITIVA per Evolve 1.4 (incluse nel pacchetto le correzioni ai file v1.4.1 per build Andamento e navigazione menu Aruba).
+- Non sostituisce l'intero repository, non cancella dati, non richiede modifiche ad Aruba.
+- Nuovo percorso autenticato: /evolve/inizia
+- Presentazione, scelta di 1-3 aree, obiettivo e ostacolo, tempo e ancoraggio, proposta con approvazione selettiva.
+- Salvataggio su Supabase per singolo account, piano nel registro dei Coach Commitments gia' esistente.
+- Livelli Guidato, Essenziale, Autonomo (scelti dall'utente); meno suggerimenti facoltativi nella pagina Oggi.
+- Dopo almeno 14 giorni, almeno 5 esiti su 4 giornate diverse, >=80% completati e auto-valutazione >=4/5, Evolve PUO' SUGGERIRE meno guida. Non modifica nulla automaticamente.
+- Gli impegni che hai gia' concordato restano invariati, anche quando scegli Autonomo.
+- Nessuna diagnosi, prescrizione atletica o dietetica. Nessuna informazione fisica obbligatoria.
+
+INSTALLAZIONE (Windows)
+1. Fai copia della cartella locale corrente di Evolve, comprese le modifiche non ancora committate.
+2. Estrai questo ZIP nella RADICE del repository locale, sovrascrivendo solo i file inclusi. Non eliminare .git o .env.local.
+3. In Supabase > SQL Editor esegui UNA VOLTA: supabase/migrations/202610210003_smart_onboarding.sql
+   - Le migrazioni precedenti per il profilo e il piano del Coach DEVONO gia' esistere.
+4. In PowerShell dalla root del repository:
+   npm install
+   node tests/check-onboarding.mjs
+   npm run test:release
+   npm run typecheck
+   npm run build
+5. Pubblica soltanto se tutti i test e build passano:
+   git status
+   git add -A
+   git commit -m "Evolve 1.5 Smart onboarding e autonomia"
+   git push origin main
+6. Aspetta che Vercel mostri Ready, poi prova su Chrome Android, in incognito, se necessario:
+   https://www.danilorusciano.it/evolve/inizia
+   https://www.danilorusciano.it/evolve/giornata
+
+COLLAUDO
+- Nuovo utente: registrazione, presentazione, scelta ambiti, piano, approvazione, pagina Oggi.
+- Utente esistente: dati presenti; il wizard non appare obbligatoriamente e non elimina impegni esistenti.
+- Verifica modifica del livello supporto: Guidato -> Essenziale -> Autonomo; solo suggerimenti facoltativi devono diminuire.
+- Verifica che gli impegni approvati rimangano attivi, che il coach e il diario siano accessibili.
+- Verifica il salvataggio su account distinti e policy RLS, inclusa assenza di accesso incrociato.
+
+NOTE IMPORTANTI
+- Le proposte iniziali sono basate su regole dichiarate, non sulle diagnosi o previsioni di un'AI.
+- La proposta di meno accompagnamento usa pochi indicatori osservativi: NON misura salute o efficacia del coaching.
+- Ripersonalizzare crea impegni NUOVI. Quelli precedenti vanno sospesi dal Piano se non sono piu' utili.
+- La scrittura del profilo e quella del piano sono due operazioni separate: se un errore interrompe la seconda, il profilo puo' risultare gia' salvato. Riprovare con lo stesso invio evita duplicati sul token; controllare il Piano se si e' incerti.
+- Non e' stata eseguita qui una build Next.js completa con moduli del progetto: fare sempre npm run typecheck e npm run build prima del push.
+- Il proxy PHP Aruba puo' comunque interrompere richieste RSC in parti del sito che usano ancora client routing; questo pacchetto non modifica il proxy.
