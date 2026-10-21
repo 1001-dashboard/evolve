@@ -1,0 +1,63 @@
+EVOLVE 1.4 — ANDAMENTO 360 (PATCH, non progetto completo)
+=========================================================
+
+SCOPO
+La 1.4 collega dati che Evolve già registra (allenamenti, check-in di benessere, impegni del Coach, piani meal prep) in una vista comune 7/30 giorni e aggiunge un archivio FACOLTATIVO delle pesate.
+
+COMPATIBILITA'
+- Patch per repository github.com/1001-dashboard/evolve versione 1.2 e successive; compatibile con patch 1.3.
+- Non sovrascrive next.config.ts, middleware, auth, Aruba, Supabase client, coach, mealprep o allenamenti.
+- Modifica un file preesistente: src/app/(app)/progressi/page.tsx; tutto il resto aggiunge percorsi e file nuovi.
+- Fai il backup prima di copiare.
+
+INSTALLAZIONE
+1. Sul PC apri la cartella del repository (quella che contiene .git e package.json).
+2. Fai una copia di sicurezza e NON eliminare .git e .env.local.
+3. Estrai la PATCH nella cartella, mantenendo la struttura e sovrascrivendo i file proposti.
+4. Supabase > SQL Editor: esegui UNA volta supabase/migrations/202610210002_outcomes.sql.
+   Crea soltanto public.evolve_weight_entries con Row Level Security.
+5. Apri PowerShell nella cartella del progetto ed esegui:
+
+   npm install
+   node tests/check-outcomes.mjs
+   npm run test:release
+   npm run typecheck
+   npm run build
+
+6. Se non ci sono errori, controlla con git status i file prima di pubblicare:
+
+   git status
+   git add -A
+   git commit -m "Evolve 1.4 Andamento 360"
+   git push origin main
+
+7. Quando Vercel e' READY, apri:
+   https://danilorusciano.it/evolve/progressi
+   oppure direttamente https://danilorusciano.it/evolve/andamento
+
+8. Da Android prova: login, pagina Risultati, pulsanti 7/30 giorni, salvataggio ed eliminazione pesata, export CSV.
+
+FUNZIONAMENTO
+- Sessioni: somma i minuti presenti in evolve_workouts (nessuna stima di calorie).
+- Energia e sonno: medie calcolate solo sui check-in effettivamente registrati.
+- Coach: distingue impegni completati e rimandati.
+- Meal prep: conta settimane con menu salvato; NON assume che i pasti siano stati consumati.
+- Peso: usa misure inserite dall'utente; nessun obiettivo di perdita automatica.
+- Non invia pesate o dati di salute all'AI Gemini; l'API usa soltanto Supabase autenticato.
+
+PRIVACY
+- Le letture e scritture verificano la sessione e filtrano user_id.
+- La nuova tabella consente accesso solo al proprietario grazie alle policy RLS.
+- Le pesate possono essere esportate in CSV ed eliminate una per una.
+- Il modulo non e' un dispositivo medico e non trae conclusioni sulla salute da variazioni rapide.
+
+TEST E LIMITI
+- Test locale svolto: 37 controlli su sintassi, date, calcoli, API, RLS e breakpoint CSS.
+- Layout CSS provato con Chromium a 320/360/390/768/1200 px su pagina campione.
+- Non eseguiti qui: npm run typecheck, build completa, suite legacy ed E2E su Vercel/Supabase reale.
+- Le query limitano il numero di record; per un utilizzo intensivo serviranno paginazione e ulteriori test.
+
+ROLLBACK
+Se la build non supera i test, non pubblicare. Ripristina i file precedenti dal backup o con git restore, senza cancellare i dati.
+Se il deploy fallisce dopo la pubblicazione, da Vercel puoi fare rollback al precedente deployment Ready.
+La tabella aggiunta in Supabase non modifica le tabelle esistenti e può rimanere anche dopo rollback dell'app.
