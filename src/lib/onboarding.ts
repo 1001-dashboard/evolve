@@ -11,7 +11,7 @@ export const AREAS = [
 ] as const;
 export type Area = typeof AREAS[number]['id'];
 export type SupportLevel = 'guidato'|'essenziale'|'autonomo';
-export type OnboardingInput = {areas:Area[];goal:string;obstacle:string;minutes:5|10|15|20|30|45|60;anchor:string;support_level:SupportLevel;confidence:1|2|3|4|5};
+export type OnboardingInput = {areas:Area[];priority_areas:Area[];goal:string;obstacle:string;minutes:5|10|15|20|30|45|60;anchor:string;support_level:SupportLevel;confidence:1|2|3|4|5};
 export type StoredOnboarding = OnboardingInput & {user_id:string;approval_token:string;started_on:string;updated_at:string};
 export type StarterItem = {kind:'azione'|'routine'|'allenamento'|'alimentazione'|'percorso'|'scenario';title:string;description:string;minutes:number;cadence:'daily'|'weekly';days:number[];time_window:'flessibile'};
 
@@ -26,8 +26,9 @@ const templates:Record<Area, Omit<StarterItem,'minutes'>>={
  organizzazione:{kind:'routine',title:'Scegli una priorità sostenibile',description:'Identifica la singola attività che renderebbe utile la giornata. Prepara una versione minima per quando tempo ed energia scarseggiano.',cadence:'daily',days:[],time_window:'flessibile'},
 };
 /** Stable preview and server-side source of truth; user approves explicit indices. */
-export function starterPlan(input:Pick<OnboardingInput,'areas'|'minutes'|'anchor'|'obstacle'>):StarterItem[]{
- const selected=input.areas.slice(0,3);
+export function starterPlan(input:Pick<OnboardingInput,'areas'|'priority_areas'|'minutes'|'anchor'|'obstacle'>):StarterItem[]{
+ // Only explicitly active priorities generate a starter plan; all other interests remain in the profile.
+ const selected=input.priority_areas.filter(a=>input.areas.includes(a)).slice(0,3);
  const mins=input.minutes;
  return selected.map((area,i)=>{
   const v=templates[area];

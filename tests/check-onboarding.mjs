@@ -13,20 +13,20 @@ const mod={exports:{}};const compiled=ts.transpileModule(read('src/lib/onboardin
 vm.runInNewContext(compiled,{exports:mod.exports,module:mod});
 const lib=mod.exports;
 for(const area of lib.AREAS){
- const input={areas:[area.id],minutes:15,anchor:'dopo colazione',obstacle:'poco tempo'};
+ const input={areas:[area.id],priority_areas:[area.id],minutes:15,anchor:'dopo colazione',obstacle:'poco tempo'};
  ok('Safe concrete starter for '+area.id,()=>{
   const p=lib.starterPlan(input);assert.equal(p.length,1);assert(p[0].description.length>=8&&p[0].description.length<=650);assert(p[0].minutes>=1&&p[0].minutes<=120);assert(['azione','routine','allenamento','alimentazione','percorso','scenario'].includes(p[0].kind));
  });
 }
 for(const minutes of [5,10,15,20,30,45,60])ok('Budget '+minutes,()=>{
- const p=lib.starterPlan({areas:['abitudini','allenamento','alimentazione'],minutes,anchor:'',obstacle:''});assert.equal(p.length,3);assert(p.every(c=>c.minutes<=minutes));
+ const p=lib.starterPlan({areas:['abitudini','allenamento','alimentazione'],priority_areas:['abitudini','allenamento','alimentazione'],minutes,anchor:'',obstacle:''});assert.equal(p.length,3);assert(p.every(c=>c.minutes<=minutes));
 });
 
 ok('Several completions in one day do not justify fading',()=>assert.equal(lib.autonomyInsight(9,0,5,25,1).suggest,false));
 for(let a=0;a<lib.AREAS.length;a++)for(let b=a+1;b<lib.AREAS.length;b++)for(let c=b+1;c<lib.AREAS.length;c++){
  const arr=[lib.AREAS[a].id,lib.AREAS[b].id,lib.AREAS[c].id];
  ok('Three-area combination '+arr.join(','),()=>{
-  const p=lib.starterPlan({areas:arr,minutes:10,anchor:'',obstacle:''});
+  const p=lib.starterPlan({areas:arr,priority_areas:arr,minutes:10,anchor:'',obstacle:''});
   assert.equal(p.length,3);assert(p.every(x=>x.minutes<=10));
   assert(p.every(x=>x.cadence==='weekly'&&x.days.length>=1));
   assert.equal(new Set(p.flatMap(x=>x.days)).size,6);
@@ -51,6 +51,7 @@ ok('AI context opt-in remains unchanged',()=>assert(!api.includes('coach_context
 const today=read('src/app/(app)/giornata/page.tsx');
 ok('No forced onboarding and Coach stays active',()=>assert(today.includes('!onboarding?')&&today.includes('<CoachCommitments section="today"/>')));
 ok('Daily prompt level affects only optional cards',()=>assert(today.includes('guidanceCards(suggested,onboarding.support_level)')));
-ok('Aruba basePath unmodified by patch',()=>assert(!fs.existsSync('next.config.ts')));
+ok('Aruba basePath unmodified by patch',()=>assert(read('next.config.ts').includes("basePath: '/evolve'")));
+ok('All eight interests allowed',()=>{const all=lib.AREAS.map(x=>x.id); const p=lib.starterPlan({areas:all,priority_areas:['organizzazione','benessere','lavoro'],minutes:15,anchor:'',obstacle:''});assert.equal(p.length,3);assert.equal(p[0].title,'Scegli una priorità sostenibile');});
 ok('Android-first layout',()=>assert(read('src/app/onboarding.css').includes('@media(max-width:600px)')));
 console.log(`EVOLVE 1.5 onboarding: ${tests} tests OK`);

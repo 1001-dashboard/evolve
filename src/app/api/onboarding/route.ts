@@ -9,14 +9,17 @@ const minutes=z.union([z.literal(5),z.literal(10),z.literal(15),z.literal(20),z.
 const level=z.enum(['guidato','essenziale','autonomo']);
 const confidence=z.number().int().min(1).max(5);
 const setup=z.object({
- areas:z.array(area).min(1).max(3).refine(a=>new Set(a).size===a.length),
+ areas:z.array(area).min(1).max(8).refine(a=>new Set(a).size===a.length),
+ priority_areas:z.array(area).min(1).max(3).refine(a=>new Set(a).size===a.length),
  goal:z.string().trim().min(5).max(320),obstacle:z.string().trim().max(350),
  minutes,anchor:z.string().trim().max(120),support_level:level,confidence,
  approval_token:z.string().uuid(),accepted_indices:z.array(z.number().int().min(0).max(2)).min(1).max(3).refine(a=>new Set(a).size===a.length)
+}).superRefine((v,ctx)=>{
+ if(v.priority_areas.some(a=>!v.areas.includes(a)))ctx.addIssue({code:'custom',path:['priority_areas'],message:'Le priorità devono appartenere agli ambiti selezionati.'});
 });
 const adjust=z.object({support_level:level,confidence});
-const missing=(code?:string)=>code==='42P01'||code==='PGRST205'||code==='PGRST204';
-const message=(code?:string)=>missing(code)?'Esegui prima la migrazione SQL 202610210003_smart_onboarding.sql in Supabase.':`Salvataggio non riuscito${code?` (codice ${code})`:''}.`;
+const missing=(code?:string)=>code==='42P01'||code==='42703'||code==='PGRST205'||code==='PGRST204'||code==='23514'||code==='23502';
+const message=(code?:string)=>missing(code)?'Verifica le migrazioni Supabase 202610210003_smart_onboarding.sql e 202610210004_focus_areas.sql.':`Salvataggio non riuscito${code?` (codice ${code})`:''}.`;
 async function authenticate(){const sb=await serverSupabase();const {data:{user}}=await sb.auth.getUser();return {sb,user};}
 function daysBetween(a:string,b:string){const v=Date.parse(a+'T12:00:00Z'),w=Date.parse(b+'T12:00:00Z');return Number.isFinite(v)&&Number.isFinite(w)?Math.max(0,Math.floor((w-v)/86400000)):0;}
 function subtractDays(ymd:string,n:number){const d=new Date(ymd+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-n);return d.toISOString().slice(0,10);}
@@ -48,7 +51,7 @@ export async function POST(req:NextRequest){
  if(input.accepted_indices.some(n=>n>=selected.length))return NextResponse.json({error:'Una delle attività non appartiene al tuo piano.'},{status:400});
  const {data:prior,error:priorErr}=await sb.from('evolve_guided_onboarding').select('started_on').eq('user_id',user.id).maybeSingle();
  if(priorErr)return NextResponse.json({error:message(priorErr.code)},{status:503});
- const stored={user_id:user.id,areas:input.areas,goal:input.goal,obstacle:input.obstacle,minutes:input.minutes,anchor:input.anchor,support_level:input.support_level,confidence:input.confidence,approval_token:input.approval_token,started_on:prior?.started_on??romeDay(),updated_at:new Date().toISOString()};
+ const stored={user_id:user.id,areas:input.areas,priority_areas:input.priority_areas,goal:input.goal,obstacle:input.obstacle,minutes:input.minutes,anchor:input.anchor,support_level:input.support_level,confidence:input.confidence,approval_token:input.approval_token,started_on:prior?.started_on??romeDay(),updated_at:new Date().toISOString()};
  const {error:saveErr}=await sb.from('evolve_guided_onboarding').upsert(stored,{onConflict:'user_id'});
  if(saveErr)return NextResponse.json({error:message(saveErr.code)},{status:500});
  // Updating only supplied columns preserves sensitive fields and explicit AI consent.

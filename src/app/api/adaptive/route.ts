@@ -22,7 +22,7 @@ export async function GET(){
   sb.from('evolve_daily_states').select('day,energy').eq('user_id',user.id).gte('day',start7).lte('day',today).limit(20),
   sb.from('evolve_workouts').select('occurred_at,duration_minutes').eq('user_id',user.id).gte('occurred_at',startStamp).order('occurred_at',{ascending:false}).limit(100),
   sb.from('evolve_meal_plans').select('week_start').eq('user_id',user.id).eq('week_start',monday(today)).maybeSingle(),
-  sb.from('evolve_guided_onboarding').select('areas,support_level,confidence,started_on').eq('user_id',user.id).maybeSingle()
+  sb.from('evolve_guided_onboarding').select('priority_areas,support_level,confidence,started_on').eq('user_id',user.id).maybeSingle()
  ]);
  if(items.error||logs.error)return NextResponse.json({error:'Il registro del Coach non è disponibile. Verifica le migrazioni già previste per Evolve.'},{status:503});
  const notes:string[]=[];
@@ -36,7 +36,8 @@ export async function GET(){
   checkins:checkins.error?[]:(checkins.data??[]) as AdaptiveCheckin[],
   workouts:workouts.error?[]:(workouts.data??[]) as AdaptiveWorkout[],
   mealPlanSaved:meal.error?null:Boolean(meal.data),
-  onboarding:profile.error?null:(profile.data??null) as AdaptiveProfile|null
+  onboarding:profile.error||!profile.data?null:({areas:profile.data.priority_areas,
+    support_level:profile.data.support_level,confidence:profile.data.confidence,started_on:profile.data.started_on} as AdaptiveProfile)
  });
  return NextResponse.json({...result,notes,today},{headers:{'Cache-Control':'private, no-store'}});
 }
