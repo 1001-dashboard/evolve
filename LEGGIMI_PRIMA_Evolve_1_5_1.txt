@@ -1,0 +1,86 @@
+EVOLVE 1.5.1 — FIRST EXPERIENCE (Android, registrazione e recupero account)
+=========================================================================
+
+COS'È
+Patch additiva per il repository Evolve v1.5 corrente. Non è un progetto completo.
+Conserva .git, .env.local, Supabase, percorsi, Coach, Allenamento, Meal Prep e diario.
+Non modificare Aruba, .htaccess o next.config.ts. Nessuna nuova migrazione SQL.
+
+FUNZIONI
+- Pagina pubblica aggiornata: cosa fa Evolve e come iniziare.
+- /evolve/registrati: nuova registrazione individuale con doppia password e email di conferma.
+- /evolve/auth/conferma: conferma via codice PKCE o token_hash, con ritorno a /evolve/inizia.
+- /evolve/login: accesso semplice, con collegamenti a registrazione e recupero.
+- /evolve/password-dimenticata: invio link senza intervento dell'amministratore.
+- /evolve/auth/recupero: nuova password, con sessione autorizzata e logout a fine procedura.
+- /evolve/installa: istruzioni Android e pulsante installazione dove il browser lo consente.
+- /evolve/manifest.webmanifest: manifest PWA con icone del brand già presenti.
+- /evolve/inizia: onboarding v1.5 esistente con link per installazione Android.
+- Nessuna cache offline di dati personali; nessuna promessa di notifiche push.
+
+PRIMA DEL DEPLOY — SUPABASE AUTH
+1. Supabase > Authentication > Providers > Email: abilita la registrazione via email.
+   Si consiglia la conferma dell'email. Verifica che il progetto possa realmente
+   inviare email (limiti del servizio; SMTP personalizzato se necessario).
+2. Supabase > Authentication > URL Configuration:
+   Site URL: https://www.danilorusciano.it/evolve/
+   Redirect URLs (aggiungi ESATTAMENTE le due URL):
+   https://www.danilorusciano.it/evolve/auth/conferma
+   https://www.danilorusciano.it/evolve/auth/recupero
+   Se si usa anche il dominio senza www, aggiungi anche:
+   https://danilorusciano.it/evolve/auth/conferma
+   https://danilorusciano.it/evolve/auth/recupero
+3. Non inserire chiavi service_role nel browser e non incollare chiavi in chat.
+4. Il link email va aperto preferibilmente nello stesso browser/dispositivo
+   in cui la registrazione o il reset sono stati richiesti (flusso PKCE).
+   Se viene aperto in un altro browser e fallisce, riprova nello stesso browser.
+5. Se Supabase è configurato con template email personalizzati, controlla
+   che questi mantengano il parametro redirect_to e il codice/token necessari.
+
+INSTALLAZIONE (Windows)
+1. Fai backup della cartella Evolve funzionante. Verifica di partire dalla v1.5
+   e di aver già applicato le migrazioni delle versioni precedenti.
+2. Estrai questo ZIP NELLA RADICE del repository sovrascrivendo solo i file
+   inclusi. Non cancellare .git o .env.local.
+3. In PowerShell (dalla root del repository):
+
+   npm install
+   node tests/check-first-experience.mjs
+   npm run test:release
+   npm run typecheck
+   npm run build
+
+4. Se tutti i comandi passano:
+
+   git status
+   git add -A
+   git commit -m "Evolve 1.5.1 First Experience"
+   git push origin main
+
+5. Attendi Vercel READY. Non eseguire nessuna nuova migrazione Supabase.
+
+COLLAUDO OBBLIGATORIO (Chrome Android, preferibilmente nuovo indirizzo email)
+A. Da https://www.danilorusciano.it/evolve/ entra in Crea account.
+B. Crea un account di prova e verifica la ricezione dell'email (anche Spam).
+C. Apri il link sullo stesso browser, conferma email, verifica /evolve/inizia.
+D. Scegli un ambito, approva una proposta e verifica /evolve/giornata.
+E. Esci, accedi con lo stesso account e controlla che il piano sia rimasto.
+F. Prova Password dimenticata, ricevi link, imposta una password nuova,
+   accedi e verifica che la vecchia password non funzioni più.
+G. Verifica /evolve/installa e l'opzione Installa/Aggiungi a schermata Home.
+H. Accedi con un altro account e verifica che non compaiano dati dell'altro.
+I. Verifica le pagine Coach, Piano, Andamento, Allenamento, Meal Prep e menu
+   da telefono dopo il deploy; il proxy RSC ha avuto precedenti problemi.
+
+LIMITI / NOTE TECNICHE
+- Nessun file PHP o configurazione Aruba è stato modificato.
+- Le URL di conferma e recupero sono pagine client; riutilizzano le sessioni
+  Supabase SSR nello stesso dominio per evitare redirect a Vercel.
+- Email e password dipendono da Supabase Auth e dalle sue impostazioni di SMTP.
+- Il pulsante "Installa" appare soltanto se Chrome espone beforeinstallprompt;
+  altrimenti usare il menu Chrome. Offline e notifiche push NON sono implementati.
+- Pagine di autenticazione volutamente a navigazione completa (niente RSC prefetch).
+- Non è stato possibile eseguire qui una build Next.js completa con tutte le
+  dipendenze del progetto; tipo e build vanno validati PRIMA del push.
+- Se la 1.5 non è ancora in produzione, pubblica quella versione per prima
+  con la migrazione onboarding già necessaria, poi applica questa patch.

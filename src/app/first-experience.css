@@ -1,0 +1,30 @@
+/* Public-first signup/recovery and Android help. Scoped to avoid breaking existing Evolve layouts. */
+.auth-card{display:grid;gap:12px;max-width:480px;min-width:0}
+.auth-card h1{line-height:1.16;letter-spacing:-.025em}
+.auth-card form{min-width:0}
+.auth-card label{font-size:14px;font-weight:650;color:#28465a;min-width:0}
+.auth-card input{margin-top:7px;min-width:0}
+.auth-links{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;border-top:1px solid #e5edf2;padding-top:16px;font-size:14px;color:#086a75;font-weight:650}
+.auth-links a,.auth-back{min-height:44px;display:inline-flex;align-items:center}
+.auth-small{font-size:12px;line-height:1.6;margin-top:6px}
+.auth-back{color:#086a75;font-size:13px}
+.auth-error,.auth-success{font-size:13px;padding:12px 14px;border-radius:12px;line-height:1.5}
+.auth-error{background:#fff2f2;border:1px solid #eab8b8;color:#8d2630}
+.auth-success{background:#eaf8f3;border:1px solid #b9e2d1;color:#195e4e;display:flex;gap:8px;align-items:center}
+.auth-install-page{min-height:100vh;display:grid;align-content:center;justify-content:center;padding:20px;gap:14px}
+.auth-install{width:min(100%,490px);display:grid;gap:17px}
+.auth-install-title{display:flex;align-items:flex-start;gap:13px}
+.auth-install-title h2{font-size:20px;font-weight:750;line-height:1.25}
+.auth-install-title p{font-size:13px;line-height:1.5;margin-top:5px}
+.auth-install .btn{display:inline-flex;gap:8px;align-items:center;width:max-content}
+.auth-install-steps{padding-left:22px;display:grid;gap:10px;font-size:14px;line-height:1.55}
+@media(max-width:600px){.auth-card{width:100%;padding:19px}.auth-install-page{display:block;padding:18px;min-height:auto}.auth-install{width:100%}.auth-links{gap:6px;flex-direction:column}}
+@media(max-width:600px){
+ .marketing-header{flex-wrap:wrap;gap:12px}
+ .marketing-header .evolve-brand img{width:138px;max-width:100%;height:auto}
+ .marketing-header .btn{padding:10px 12px}
+ .marketing-hero{min-width:0}
+ .marketing-hero>div{min-width:0}
+ .path-marketing-task{min-width:0}
+ .path-marketing-task strong,.path-marketing-task small{overflow-wrap:anywhere}
+}
