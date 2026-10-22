@@ -1,0 +1,13 @@
+/* Evolve 1.8.2: compact, keyboard-accessible workout editing. */
+.v1-training-editor{scroll-margin-top:20px}
+.v1-training-editor.is-editing{border-color:#70bfbd;box-shadow:0 0 0 2px #c8f1ed}
+.v1-training-editor .v1-edit-banner{border:1px solid #9fcfce;background:#eaf9f6;border-radius:12px;padding:12px;display:grid;gap:5px;margin:12px 0}
+.v1-edit-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px}
+.v1-edit-actions .btn,.v1-edit-actions .btn-secondary{min-height:44px}
+.v1-workout-table-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start}
+.v1-workout-table-actions button{padding:9px 11px;min-height:44px;border-radius:9px;font-size:13px;white-space:nowrap}
+.v1-workout-table-actions .delete-workout{border:1px solid #e8b7b7;background:#fff7f7;color:#992e36}
+.v1-workout-table-actions .delete-workout:hover{background:#ffe8e8}
+.v1-workout-table-actions .delete-workout:disabled{opacity:.5}
+.v1-training-editor [aria-live]{overflow-wrap:anywhere}
+@media(max-width:780px){.v1-training-editor{padding:16px}.v1-workout-table-actions{min-width:170px}.v1-edit-actions>*{flex:1;min-width:140px;text-align:center}}

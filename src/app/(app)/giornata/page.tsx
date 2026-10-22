@@ -1,5 +1,6 @@
 import '@/app/orchestrator.css';
 import '@/app/daily-companion.css';
+import '@/app/goal-journey.css';
 import {loadPrograms} from '@/lib/program-data';
 import {loadLife} from '@/lib/life/data';
 import {loadOnboarding} from '@/lib/onboarding-data';
@@ -9,6 +10,7 @@ import {LifeDayClient} from '@/components/life-day-client';
 import {CoachCommitments} from '@/components/coach-commitments';
 import {OrchestratorOverview} from '@/components/orchestrator-overview';
 import {DailyCompanionClient} from '@/components/daily-companion-client';
+import {GoalJourneyPanel} from '@/components/goal-journey-panel';
 import {ArrowRight} from 'lucide-react';
 export default async function Giornata(){
  const [life,progress,onboarding]=await Promise.all([loadLife(),loadPrograms(),loadOnboarding()]);
@@ -21,6 +23,7 @@ export default async function Giornata(){
    <div className="evolve-intro-links"><a href="/evolve/coach" className="btn-secondary">Affronta un nuovo obiettivo <ArrowRight size={16}/></a><a href="/evolve/guida" className="evolve-text-help">Come funziona Evolve? →</a></div>
   </div>
   <DailyCompanionClient/>
+  <GoalJourneyPanel mode="today"/>
   <section className="panel" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap',marginBottom:18}}>
    <div><p className="eyebrow">EVOLVE CORE · NOVITÀ 1.8</p><h2 className="text-lg font-bold">Ogni passo fa parte di un percorso.</h2><p className="muted text-sm">Allenamento, Piano, check-in e diario in una cronologia condivisa. Collega le evidenze al Coach solo quando lo scegli tu.</p></div>
    <a href="/evolve/visione" className="btn-secondary">Apri Visione 360 <ArrowRight size={16}/></a>

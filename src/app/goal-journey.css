@@ -1,0 +1,36 @@
+/* Evolve 1.8.1 — additive and self-contained goal UX. */
+.gj-root{border:1px solid #d6e6e7;background:white;border-radius:20px;padding:clamp(15px,3vw,25px);margin:18px 0;display:grid;gap:18px;min-width:0;color:#17394c}
+.gj-root *{box-sizing:border-box;min-width:0}
+.gj-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.gj-heading h2{font-size:clamp(20px,2.7vw,26px);font-weight:800;line-height:1.22;margin:7px 0}
+.gj-heading p:not(.eyebrow){font-size:13px;color:#526e7c;line-height:1.55;max-width:640px}
+.gj-refresh,.gj-status-actions button,.gj-link-current button{background:#f0f9f9;border:1px solid #cbe0e2;border-radius:11px;color:#1b7176;font-size:12px;font-weight:750;min-height:44px;padding:10px 12px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.gj-create{background:#f5faf9;border:1px solid #d8e9e5;border-radius:14px;padding:16px;display:grid;gap:12px}
+.gj-create strong{font-size:16px}.gj-create p{color:#55717f;font-size:12px;line-height:1.5;margin:4px 0}.gj-create small{font-size:11px;color:#5c7884}
+.gj-fields{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(200px,1.6fr);gap:12px}
+.gj-create label{display:grid;gap:5px;font-size:12px;font-weight:700;color:#375765}
+.gj-create input,.gj-create textarea,.gj-create select,.gj-entry-action select{background:white;border:1px solid #c6d9db;border-radius:10px;padding:11px;min-height:44px;min-width:0;width:100%;font-size:14px;color:#17394c}
+.gj-create textarea{resize:vertical}.gj-primary,.gj-entry-action button{background:#117c7d;border:0;border-radius:11px;color:white;min-height:44px;padding:10px 16px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:800;cursor:pointer;width:fit-content}
+.gj-root button:disabled{opacity:.5;cursor:not-allowed}
+.gj-error,.gj-ok,.gj-empty{border-radius:11px;padding:12px 15px;font-size:13px;line-height:1.6}
+.gj-error{background:#fff3f2;color:#943b35}.gj-ok{background:#edfaf5;color:#216e60;display:flex;align-items:center;gap:9px}.gj-empty{background:#f5fafb;color:#526c7b}
+.gj-goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gj-goal{border:1px solid #dfe9e9;border-radius:14px;padding:15px;background:#fcfefe;display:grid;gap:9px}
+.gj-goal-head{display:flex;gap:8px;justify-content:space-between;color:#2f8587;font-size:11px;font-weight:750}
+.gj-goal h3{font-size:17px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+.gj-goal p{font-size:12px;color:#506e7a;line-height:1.5;overflow-wrap:anywhere}
+.gj-goal small{color:#627b87;line-height:1.5;font-size:11px}
+.gj-measures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:12px;color:#5b7480}
+.gj-measures span{border-radius:9px;background:#f1f7f7;padding:9px;line-height:1.35;overflow-wrap:anywhere}.gj-measures strong{font-size:18px;color:#164b57;display:inline-block;margin-right:4px}
+.gj-status-actions{display:flex;flex-wrap:wrap;gap:9px}.gj-status-actions button{min-height:39px}
+.gj-entries{display:grid;gap:10px}.gj-entries h3{font-size:17px;font-weight:800;margin-bottom:5px}.gj-muted{font-size:12px;color:#637e8b;line-height:1.5}
+.gj-entry{border:1px solid #e0eaea;border-radius:12px;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.gj-entry-main{display:grid;gap:3px;flex:1 1 200px}.gj-entry-main span{color:#318085;font-size:11px;font-weight:750}.gj-entry-main strong{font-size:14px;overflow-wrap:anywhere}.gj-entry-main small{font-size:11px;color:#68818d}
+.gj-entry-action{display:flex;gap:7px;align-items:center;flex:1 1 290px}.gj-entry-action label{font-size:12px;white-space:nowrap;font-weight:700;color:#526f7b}.gj-entry-action select{flex:1;min-width:125px}.gj-entry-action button{white-space:nowrap}
+.gj-link-current{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.gj-link-current>span{font-size:12px;color:#236c6f;display:inline-flex;align-items:center;gap:5px}.gj-more{display:flex;align-items:center;gap:7px;color:#117678;font-size:13px;font-weight:750;text-decoration:none;min-height:44px}
+.gj-notices{border-top:1px solid #e5eeee;padding-top:10px;color:#617681;font-size:12px}.gj-notices summary{cursor:pointer;font-weight:700}
+@media(max-width:700px){.gj-goal-grid{grid-template-columns:minmax(0,1fr)}.gj-entry-action{width:100%}}
+@media(max-width:500px){.gj-fields{grid-template-columns:minmax(0,1fr)}.gj-entry-action{display:grid;grid-template-columns:minmax(0,1fr)}.gj-entry-action button{width:100%}.gj-heading .gj-refresh{width:100%;justify-content:center}.gj-root{border-radius:15px;padding:14px}}
+@media(prefers-reduced-motion:reduce){.gj-root *{scroll-behavior:auto!important}}
+
+.gj-more-records{border:1px solid #cbe1e0;border-radius:11px;background:#f1f9f9;color:#176a70;font-weight:750;padding:11px;min-height:44px;cursor:pointer}
