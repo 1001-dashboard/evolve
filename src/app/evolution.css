@@ -1,0 +1,35 @@
+/* Evolve 1.8 — independent, responsive dashboard; basePath-aware links handled in TSX. */
+.ev-page{display:grid;gap:20px;min-width:0;max-width:1100px;margin:0 auto;padding-bottom:30px;color:#163448}
+.ev-page *{box-sizing:border-box}
+.ev-hero{padding:8px 0 4px}
+.ev-hero h1{font-size:clamp(29px,4vw,43px);line-height:1.14;letter-spacing:-.04em;font-weight:800;margin:8px 0 10px;color:#163448}
+.ev-hero>p:not(.eyebrow){max-width:770px;color:#536979;line-height:1.65}
+.ev-navlinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.ev-navlinks a{display:inline-flex;align-items:center;gap:7px;padding:10px 13px;border:1px solid #c7dfdf;background:#fff;border-radius:11px;color:#17666e;font-size:13px;font-weight:700;text-decoration:none;min-height:44px}
+.ev-panel{min-width:0;border:1px solid #d8e5e7;background:#fff;border-radius:20px;padding:clamp(17px,3vw,27px);box-shadow:0 4px 22px rgba(18,61,68,.04)}
+.ev-panel h2{font-size:clamp(18px,2.5vw,24px);font-weight:800;line-height:1.25;color:#18384a}
+.ev-between{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.ev-between .eyebrow{margin-bottom:6px}
+.ev-refresh{display:inline-flex;align-items:center;gap:7px;background:#f0f8f8;border:1px solid #cbe2e1;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;color:#21747a;min-height:44px;cursor:pointer}
+.ev-refresh:disabled,.ev-connect button:disabled,.ev-connected button:disabled{opacity:.5;cursor:not-allowed}
+.ev-goal{padding:13px 14px;margin-bottom:17px;border-left:4px solid #25918e;background:#f0f9f8;border-radius:8px;line-height:1.5;overflow-wrap:anywhere}
+.ev-range{display:inline-flex;padding:4px;gap:4px;background:#eaf3f3;border-radius:11px;margin-bottom:15px;flex-wrap:wrap}
+.ev-range button{border:0;border-radius:9px;background:transparent;color:#456574;padding:10px 13px;font-weight:700;cursor:pointer;min-height:42px}
+.ev-range button.active{background:#fff;color:#17676e;box-shadow:0 2px 8px rgba(18,61,68,.09)}
+.ev-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ev-stats>div{border:1px solid #d8e8e8;border-radius:14px;background:#f8fcfc;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ev-stats svg{color:#197e84}.ev-stats span{font-size:12px;color:#577281;line-height:1.4}.ev-stats strong{font-size:31px;font-weight:800;line-height:1.1;color:#163f50}.ev-stats small{font-size:11px;color:#647b86}
+.ev-footnote{font-size:12px;line-height:1.65;color:#647a88;margin-top:14px}
+.ev-small-link{display:inline-flex;gap:6px;align-items:center;text-decoration:none;font-size:13px;font-weight:700;color:#146b72}
+.ev-domain-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ev-domain{border:1px solid #e1e9ea;border-radius:13px;padding:16px;background:#fcfdfd;min-width:0}
+.ev-domain-active{border-color:#a8d8d6;background:#f1fbfa}
+.ev-kicker{font-size:10px;letter-spacing:.08em;font-weight:800;color:#427f81}.ev-domain h3{font-size:16px;font-weight:800;margin:6px 0 12px}.ev-domain strong{display:block;font-size:29px;font-weight:800}.ev-small-label{display:block;font-size:11px;color:#536c7a;margin:2px 0 12px}.ev-domain p{font-size:12px;color:#617785;line-height:1.5;overflow-wrap:anywhere}
+.ev-filter{position:relative;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#536c7a}.ev-filter select{appearance:none;border:1px solid #cbdedf;border-radius:10px;padding:10px 29px 10px 12px;background:#fff;min-height:44px;color:#183d50}.ev-filter svg{position:absolute;right:8px;pointer-events:none}
+.ev-timeline{display:grid;gap:10px}.ev-event{min-width:0;border:1px solid #e0ebeb;border-radius:14px;padding:15px 17px;background:#fcfefe}.ev-event-head{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#637786;margin-bottom:8px}.ev-source{font-weight:800;letter-spacing:.05em;color:#167079;text-transform:uppercase}.ev-event h3{font-weight:800;color:#1d3d4e;font-size:16px;margin:0 0 5px}.ev-event>p{font-size:13px;line-height:1.55;color:#587080;overflow-wrap:anywhere}.ev-tag{display:inline-block;border-radius:12px;padding:5px 9px;background:#edf6f6;color:#235f67;font-size:11px;margin-top:8px}.ev-event-footer{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}.ev-event-footer>a{color:#146d72;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px;min-height:38px}
+.ev-connect{border-top:1px solid #dfebeb;margin-top:11px;padding-top:13px;display:grid;gap:8px}.ev-connect label{font-size:12px;color:#526e7b;font-weight:700}.ev-connect>div{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ev-connect select{flex:1;min-width:160px;max-width:100%;min-height:44px;border:1px solid #c9dedf;border-radius:10px;background:white;padding:10px 12px;color:#1b4153}.ev-connect button{border:0;background:#117c7d;color:#fff;font-weight:800;border-radius:10px;padding:11px 15px;min-height:44px;cursor:pointer}.ev-connect small{font-size:11px;color:#657c86}
+.ev-connected{display:inline-flex;align-items:center;flex-wrap:wrap;gap:8px;color:#236e71;font-size:12px}.ev-connected button{border:1px solid #c6dede;border-radius:9px;padding:8px;min-height:40px;display:inline-flex;gap:5px;align-items:center;background:#fff;color:#416773;cursor:pointer}
+.ev-empty{padding:20px;background:#f5fafb;border-radius:12px;color:#536c7c;font-size:14px;line-height:1.65}.ev-explain{display:flex;gap:13px;background:#f3faf9}.ev-explain>svg{flex-shrink:0;color:#218084}.ev-explain p{font-size:13px;color:#57717d;line-height:1.6;margin-top:7px}.ev-notices{display:grid;gap:6px}.ev-notices p{font-size:13px;color:#617481}.ev-alert,.ev-notice{border-radius:12px;padding:13px 15px;line-height:1.5;font-size:14px}.ev-alert{border:1px solid #edb6b0;background:#fff4f1;color:#8b3e35}.ev-notice{border:1px solid #a7dbd4;background:#f1fbf9;color:#176e6b;display:flex;align-items:center;gap:8px}
+@media(max-width:800px){.ev-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ev-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.ev-page{gap:13px}.ev-hero h1{font-size:28px}.ev-panel{padding:15px;border-radius:16px}.ev-domain-grid{grid-template-columns:minmax(0,1fr)}.ev-stats>div{padding:11px}.ev-stats strong{font-size:26px}.ev-event{padding:13px}.ev-navlinks a{flex-grow:1;justify-content:center}.ev-connect>div{display:grid;grid-template-columns:minmax(0,1fr);width:100%}.ev-connect select,.ev-connect button{width:100%}.ev-between{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){.ev-page *{scroll-behavior:auto!important}}

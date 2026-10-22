@@ -10,7 +10,7 @@ export type CompanionInput={
  checkin:{energy:number;available_minutes:number}|null;
  support:CompanionLevel;areas:string[];onboarded:boolean;goal:string;
  workoutToday:boolean|null;mealSaved:boolean|null;
- defaultMinutes:number;
+ defaultMinutes:number;linkedTodayIds?:string[];
 };
 export type AgendaTask={
  id:string;source:'coach'|'focus'|'suggestion';kind:string;title:string;details:string;minutes:number;
@@ -39,7 +39,7 @@ export function createAgenda(input:CompanionInput,settings?:{minutes?:number;low
  const pending=due.filter(c=>!alreadyLogged.has(c.id));
  const approved:AgendaTask[]=pending.map(c=>({
   id:`coach:${c.id}`,source:'coach',kind:c.kind,title:c.title,details:c.description,
-  minutes:safeMinutes(c.minutes),why:'Attività approvata nel tuo Piano, prevista per oggi.',
+  minutes:safeMinutes(c.minutes),why:input.linkedTodayIds?.includes(c.id)?'Attività approvata per oggi. Esiste una registrazione collegata in Visione 360: verifica e segna «Fatto» solo se l’impegno è stato davvero completato.':'Attività approvata nel tuo Piano, prevista per oggi.',
   href:tools[c.kind]??'/piano',label:'Apri lo strumento',commitmentId:c.id,canLog:true
  }));
  if(input.focus&&!input.focusLogged)approved.push({id:'focus',source:'focus',kind:'focus',title:input.focus.title,

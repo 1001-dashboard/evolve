@@ -8,7 +8,7 @@ export async function GET(){
  const sb=await serverSupabase();const {data:{user},error:authError}=await sb.auth.getUser();
  if(authError||!user)return Response.json({error:'Accedi per vedere il tuo programma.'},{status:401});
  const day=romeDay(),week=monday(day);
- const [commitments,logs,checkin,onboarding,workout,meal,focus,focusLog]=await Promise.all([
+ const [commitments,logs,checkin,onboarding,workout,meal,focus,focusLog,links]=await Promise.all([
   sb.from('evolve_coach_commitments').select('id,kind,title,description,minutes,cadence,days,status,created_at').eq('user_id',user.id).eq('status','active').order('created_at',{ascending:false}).limit(100),
   sb.from('evolve_coach_logs').select('commitment_id,day,outcome').eq('user_id',user.id).eq('day',day).limit(120),
   sb.from('evolve_daily_states').select('energy,available_minutes').eq('user_id',user.id).eq('day',day).maybeSingle(),
@@ -16,7 +16,8 @@ export async function GET(){
   sb.from('evolve_workouts').select('occurred_at').eq('user_id',user.id).gte('occurred_at',`${minusDays(day,1)}T00:00:00Z`).order('occurred_at',{ascending:false}).limit(30),
   sb.from('evolve_meal_plans').select('week_start').eq('user_id',user.id).eq('week_start',week).maybeSingle(),
   sb.from('evolve_weekly_focus').select('title,action_text,minutes').eq('user_id',user.id).eq('week_start',week).maybeSingle(),
-  sb.from('evolve_weekly_focus_logs').select('outcome').eq('user_id',user.id).eq('week_start',week).eq('day',day).maybeSingle()
+  sb.from('evolve_weekly_focus_logs').select('outcome').eq('user_id',user.id).eq('week_start',week).eq('day',day).maybeSingle(),
+  sb.from('evolve_evidence_links').select('commitment_id').eq('user_id',user.id).eq('evidence_day',day).limit(120)
  ]);
  if(commitments.error||logs.error){return Response.json({error:'Impegni del Coach non disponibili. Controlla le migrazioni Supabase del Piano.'},{status:503,headers:{'Cache-Control':'private, no-store'}});}
  const notices:string[]=[];
@@ -25,6 +26,7 @@ export async function GET(){
  if(workout.error)notices.push('Diario allenamenti non disponibile: nessuna deduzione sul movimento.');
  if(meal.error)notices.push('Meal prep non disponibile: nessuna deduzione sui pasti.');
  if(focus.error||focusLog.error)notices.push('Priorità settimanale non disponibile: non viene inclusa.');
+ if(links.error)notices.push('Collegamenti Evolution non disponibili: applica la migrazione 202610220001_evolution_links.sql.');
  const items=(commitments.data??[]) as CompanionCommitment[];
  const onceIds=items.filter(x=>x.cadence==='once').map(x=>x.id);
  let onceDoneIds:string[]=[];
@@ -35,6 +37,7 @@ export async function GET(){
  }
  const input:CompanionInput={
   day,commitments:items,logs:(logs.data??[]) as CompanionLog[],onceDoneIds,
+  linkedTodayIds:links.error?[]:(links.data??[]).map(x=>x.commitment_id as string),
   focus:focus.error?null:(focus.data??null) as CompanionFocus,
   focusLogged:focusLog.error?true:Boolean(focusLog.data),
   checkin:checkin.error?null:(checkin.data??null) as CompanionInput['checkin'],
