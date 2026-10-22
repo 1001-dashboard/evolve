@@ -31,7 +31,7 @@ export function TrainingClient(){
  const [saving,setSaving]=useState(false),[deleting,setDeleting]=useState('');
  const [editingId,setEditingId]=useState<string|null>(null);
  const [error,setError]=useState(''),[success,setSuccess]=useState('');
- const formRef=useRef<HTMLArticleElement|null>(null);
+ const formRef=useRef<HTMLElement|null>(null);
 
  async function load(){
   const response=await fetch(apiUrl('/api/training'),{cache:'no-store'});
