@@ -1,8 +1,8 @@
-import '@/app/training-intelligence.css';
-import {TrainingIntelligenceClient} from '@/components/training-intelligence-client';
 import '@/app/orchestrator.css';
 import '@/app/daily-companion.css';
 import '@/app/goal-journey.css';
+import '@/app/training-intelligence.css';
+import '@/app/today-focus.css';
 import {loadPrograms} from '@/lib/program-data';
 import {loadLife} from '@/lib/life/data';
 import {loadOnboarding} from '@/lib/onboarding-data';
@@ -13,33 +13,51 @@ import {CoachCommitments} from '@/components/coach-commitments';
 import {OrchestratorOverview} from '@/components/orchestrator-overview';
 import {DailyCompanionClient} from '@/components/daily-companion-client';
 import {GoalJourneyPanel} from '@/components/goal-journey-panel';
-import {ArrowRight} from 'lucide-react';
+import {TrainingIntelligenceClient} from '@/components/training-intelligence-client';
+import {TodayCheckinClient} from '@/components/today-checkin-client';
+import {ArrowRight,ClipboardList,Network,NotebookPen} from 'lucide-react';
+
+/** Evolve 1.9.1: make Today a decision workspace, not a stack of eight dashboards.
+ * Previously approved commitments and tools remain available under explicit disclosures.
+ */
 export default async function Giornata(){
  const [life,progress,onboarding]=await Promise.all([loadLife(),loadPrograms(),loadOnboarding()]);
  const suggested=makeDayPlan({profile:life.profile,state:life.checkin,programs:progress.programs,
   plans:progress.profiles,logs:progress.checkins,scenarios:life.scenarios,actions:life.actions,day:life.day});
  const cards=onboarding?guidanceCards(suggested,onboarding.support_level):suggested;
- return <div className="evolve-day-page">
-  <div className="evolve-page-intro"><p className="eyebrow">EVOLVE · OGGI</p><h1>Il tuo oggi, organizzato.</h1>
-   <p>Parti dagli impegni concordati. Il Companion ti aiuta a scegliere cosa mettere in evidenza in base al tempo e alle energie, senza modificare il tuo piano.</p>
-   <div className="evolve-intro-links"><a href="/evolve/coach" className="btn-secondary">Affronta un nuovo obiettivo <ArrowRight size={16}/></a><a href="/evolve/guida" className="evolve-text-help">Come funziona Evolve? →</a></div>
-  </div>
-  <DailyCompanionClient/>
-  <TrainingIntelligenceClient mode="today"/>
-  <GoalJourneyPanel mode="today"/>
-  <section className="panel" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap',marginBottom:18}}>
-   <div><p className="eyebrow">EVOLVE CORE · NOVITÀ 1.8</p><h2 className="text-lg font-bold">Ogni passo fa parte di un percorso.</h2><p className="muted text-sm">Allenamento, Piano, check-in e diario in una cronologia condivisa. Collega le evidenze al Coach solo quando lo scegli tu.</p></div>
-   <a href="/evolve/visione" className="btn-secondary">Apri Visione 360 <ArrowRight size={16}/></a>
+ return <div className="evolve-day-page today-focus-page">
+  <header className="evolve-page-intro today-focus-intro">
+   <p className="eyebrow">EVOLVE · OGGI</p>
+   <h1>Il prossimo passo parte da ciò che hai già fatto.</h1>
+   <p>Un check-in breve, le evidenze dei tuoi allenamenti e gli impegni che hai scelto. Nessun obbligo inventato e nessun progresso azzerato.</p>
+   <nav className="today-focus-jumps" aria-label="Vai alle sezioni della giornata">
+    <a href="#evolve-movimento">Il mio movimento</a><a href="#evolve-checkin">Come sto oggi</a>
+    <a href="#evolve-coach">Impegni concordati</a>
+   </nav>
+  </header>
+  <section className="today-focus-primary" id="evolve-movimento" aria-label="Il prossimo passo e le evidenze del movimento">
+   <TrainingIntelligenceClient mode="today"/>
   </section>
-  <section id="evolve-checkin" aria-label="Check-in e attività facoltative">
-   <LifeDayClient profile={life.profile} checkin={life.checkin} cards={cards} day={life.day}
-    error={life.error||progress.error} activeCount={progress.programs.filter(x=>x.status==='active').length}/>
-  </section>
-  <details className="dc-secondary" id="evolve-approfondisci"><summary>Apri il quadro completo e gli impegni concordati</summary>
-   <div>
-    {!onboarding?<p className="muted text-sm">Prima volta su Evolve? <a href="/evolve/inizia">Personalizza il tuo percorso</a>.</p>:null}
+  <section id="evolve-checkin"><TodayCheckinClient/></section>
+  <details className="today-focus-disclosure" id="evolve-coach">
+   <summary><span className="today-focus-icon"><ClipboardList size={20}/></span><span><strong>Impegni concordati con il Coach</strong><small>Consulta le attività approvate e registra ciò che hai davvero svolto</small></span><ArrowRight size={18} className="today-chevron"/></summary>
+   <div className="today-focus-detail"><DailyCompanionClient/></div>
+  </details>
+  <details className="today-focus-disclosure" id="evolve-obiettivi">
+   <summary><span className="today-focus-icon"><Network size={20}/></span><span><strong>Obiettivi connessi e Visione 360</strong><small>Collegamenti espliciti fra allenamento, piano e risultati</small></span><ArrowRight size={18} className="today-chevron"/></summary>
+   <div className="today-focus-detail"><GoalJourneyPanel mode="today"/>
+    <a className="btn-secondary today-focus-link" href="/evolve/visione">Apri tutta la panoramica <ArrowRight size={16}/></a></div>
+  </details>
+  <details className="today-focus-disclosure" id="evolve-approfondisci">
+   <summary><span className="today-focus-icon"><NotebookPen size={20}/></span><span><strong>Altre routine e strumenti della giornata</strong><small>Esercizi guidati, riflessioni e quadro completo, quando ti servono</small></span><ArrowRight size={18} className="today-chevron"/></summary>
+   <div className="today-focus-detail">
+    <section id="evolve-checkin-completo" aria-label="Check-in completo e attività facoltative">
+     <LifeDayClient profile={life.profile} checkin={life.checkin} cards={cards} day={life.day}
+      error={life.error||progress.error} activeCount={progress.programs.filter(x=>x.status==='active').length}/>
+    </section>
     <OrchestratorOverview/><CoachCommitments section="today"/>
-    {(!onboarding||onboarding.support_level!=='autonomo')&&<a href="/evolve/adatta" className="btn-secondary">Valuta gli adattamenti <ArrowRight size={15}/></a>}
+    {!onboarding&&<p className="muted text-sm">Puoi <a href="/evolve/inizia">scegliere interessi e priorità</a>; il diario Allenamento continua a funzionare anche senza onboarding.</p>}
+    {(!onboarding||onboarding.support_level!=='autonomo')&&<a href="/evolve/adatta" className="btn-secondary today-focus-link">Valuta gli adattamenti <ArrowRight size={16}/></a>}
    </div>
   </details>
  </div>;

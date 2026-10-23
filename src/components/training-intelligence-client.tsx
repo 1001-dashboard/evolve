@@ -37,7 +37,8 @@ export function TrainingIntelligenceClient({mode}:{mode:Mode}){
  useEffect(()=>{
   const handler=()=>{void reload().catch(e=>setError(e instanceof Error?e.message:'Ricaricamento non riuscito'))};
   window.addEventListener('evolve:workout-changed',handler);
-  return()=>window.removeEventListener('evolve:workout-changed',handler);
+  window.addEventListener('evolve:checkin-changed',handler);
+  return()=>{window.removeEventListener('evolve:workout-changed',handler);window.removeEventListener('evolve:checkin-changed',handler);};
  },[reload]);
  async function save(e:React.FormEvent){e.preventDefault();if(busy)return;
   setBusy(true);setError('');setNotice('');
@@ -48,12 +49,13 @@ export function TrainingIntelligenceClient({mode}:{mode:Mode}){
   }catch(e){setError(e instanceof Error?e.message:'Connessione non disponibile');}
   finally{setBusy(false)}
  }
- if(loading)return mode==='training'?<section className="ti-panel" role="status">Leggo lo storico degli allenamenti…</section>:null;
- if(!data)return mode==='training'?<section className="ti-panel" role="alert">{error||'Analisi non disponibile. Il diario Allenamento continua a funzionare.'}</section>:null;
+ if(loading)return mode==='training'||mode==='today'?<section className="ti-panel" role="status">Analizzo gli allenamenti già registrati…</section>:null;
+ if(!data)return mode==='training'||mode==='today'?<section className="ti-panel" role="alert">{error||'Analisi non disponibile. Il diario Allenamento continua a funzionare.'}</section>:null;
  const {insight:i}=data;
  const sessionsExist=i.period28.sessions>0;
- // A user who chose autonomy receives no unsolicited training prompt on Today.
- if(mode==='today'&&(i.support_level==='autonomo'||(!i.profile&&!sessionsExist&&!data.trainingPriority)))return null;
+ // 'Autonomo' suppresses unsolicited suggestions, NOT factual data the user recorded.
+ if(mode==='today'&&!i.profile&&!sessionsExist&&!data.trainingPriority)return null;
+ const showSuggestion=mode==='training'||(mode==='today'&&Boolean(i.profile));
  if(mode==='vision'&&!i.profile&&!sessionsExist)return null;
  return <section className={'ti-root ti-'+mode} aria-label="Analisi del percorso di allenamento">
    <header className="ti-head"><div><p className="eyebrow">EVOLVE · TRAINING INTELLIGENCE</p>
@@ -71,13 +73,20 @@ export function TrainingIntelligenceClient({mode}:{mode:Mode}){
    </div>
    {mode!=='today'&&<p className="ti-help">{i.period28.sessions} sessioni negli ultimi 28 giorni, distribuite su {i.period28.days} {plural(i.period28.days,'giorno','giorni')}. Sono dati osservati, non un voto sulla tua disciplina.</p>}
    {i.profile?.goal_id&&data.goals.some(g=>g.id===i.profile?.goal_id)&&<p className="ti-help">Obiettivo di Visione 360: <strong>{data.goals.find(g=>g.id===i.profile?.goal_id)?.title}</strong>. La tua scelta di riferimento è «{focusLabel[i.profile?.focus??'continuita']}».</p>}
-   {(mode==='training'||(mode==='today'&&i.support_level!=='autonomo'))&&<article className="ti-next">
+   {showSuggestion&&<article className="ti-next">
     <div className="ti-heading"><Activity size={20}/><strong>{i.next.title}</strong></div>
     <p><b>Perché:</b> {i.next.reason}</p><p>{i.next.action}</p>
+    {mode==='today'&&i.support_level==='autonomo'&&<p className="ti-help">Hai scelto tu la direzione di allenamento: questa è una possibilità facoltativa, non un nuovo impegno del Coach.</p>}
     {mode==='today'&&<a href={BASE_PATH+'/allenamento'} className="ti-link">Apri il tuo allenamento <ArrowRight size={16}/></a>}
    </article>}
-   {mode==='vision'||mode==='training'?<article className="ti-review">
-    <div className="ti-heading"><BarChart3 size={20}/><strong>Revisione dei tuoi ultimi 7 giorni</strong></div>
+   {mode==='today'&&!i.profile&&<article className="ti-next">
+    <div className="ti-heading"><Activity size={20}/><strong>{sessionsExist?'Il tuo prossimo passo: dare una direzione allo storico':'Scegli da dove iniziare'}</strong></div>
+    <p>{sessionsExist?`Hai già ${i.period28.sessions} ${plural(i.period28.sessions,'allenamento','allenamenti')} registrati: non ricominci da zero.`:'Nessun piano di allenamento è stato ancora concordato.'}</p>
+    <p>Per ricevere un suggerimento basato sul tuo percorso scegli liberamente una frequenza e un’attività di riferimento. Nessun obbligo automatico.</p>
+    <a href={BASE_PATH+'/allenamento'} className="ti-link">Configura il tuo percorso allenante <ArrowRight size={16}/></a>
+   </article>}
+   {(mode==='vision'||mode==='training'||mode==='today')?<article className="ti-review">
+    <div className="ti-heading"><BarChart3 size={20}/><strong>{mode==='today'?'Cosa raccontano i tuoi allenamenti':'Revisione dei tuoi ultimi 7 giorni'}</strong></div>
     <p>{i.review}</p>
     {i.comparable&&<p className="ti-help">{i.comparable.detail}</p>}
     {i.topActivities.length>0&&<div className="ti-activities">{i.topActivities.map(a=><span key={a.activity}>{LABELS[a.activity as ActivityName]??a.activity}: {a.sessions} {plural(a.sessions,'sessione','sessioni')}</span>)}</div>}
@@ -107,6 +116,6 @@ export function TrainingIntelligenceClient({mode}:{mode:Mode}){
     <p className="ti-help"><ShieldCheck size={15}/> Salvare queste preferenze non cambia le sessioni già registrate, non crea nuovi impegni del Coach e non collega automaticamente gli allenamenti storici agli obiettivi.</p>
    </form>}
    {mode==='vision'&&<a href={BASE_PATH+'/allenamento'} className="ti-link">Apri la direzione di allenamento <ArrowRight size={16}/></a>}
-   {mode==='training'&&data.notices.map(x=><p className="ti-alert" role="status" key={x}>{x}</p>)}
+   {(mode==='training'||mode==='today')&&data.notices.map(x=><p className="ti-alert" role="status" key={x}>{x}</p>)}
   </section>;
 }

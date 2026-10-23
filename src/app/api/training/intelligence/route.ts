@@ -24,7 +24,7 @@ export async function GET(){
    .order('occurred_at',{ascending:false}).limit(250),
   sb.from('evolve_training_preferences').select('preferred_activity,focus,target_sessions,preferred_minutes,goal_id')
    .eq('user_id',user.id).maybeSingle(),
-  sb.from('evolve_daily_states').select('day,energy,available_minutes')
+  sb.from('evolve_daily_states').select('day,energy,mood,sleep_hours,available_minutes,note')
    .eq('user_id',user.id).eq('day',today).maybeSingle(),
   sb.from('evolve_guided_onboarding').select('support_level,priority_areas')
    .eq('user_id',user.id).maybeSingle(),
@@ -49,7 +49,8 @@ export async function GET(){
   training_priority:priorities.includes('allenamento'),support_level};
  const insight=trainingReview(input);
  return NextResponse.json({insight,goals:goals.error?[]:goals.data??[],
-  trainingPriority:input.training_priority,settingsAvailable:!settings.error,notices},
+  trainingPriority:input.training_priority,settingsAvailable:!settings.error,notices,
+  todayCheckin:checkin.error?undefined:checkin.data??null},
   {headers:{'Cache-Control':'private, no-store'}});
 }
 
