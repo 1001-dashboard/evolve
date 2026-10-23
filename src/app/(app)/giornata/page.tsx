@@ -1,3 +1,5 @@
+import '@/app/training-intelligence.css';
+import {TrainingIntelligenceClient} from '@/components/training-intelligence-client';
 import '@/app/orchestrator.css';
 import '@/app/daily-companion.css';
 import '@/app/goal-journey.css';
@@ -23,6 +25,7 @@ export default async function Giornata(){
    <div className="evolve-intro-links"><a href="/evolve/coach" className="btn-secondary">Affronta un nuovo obiettivo <ArrowRight size={16}/></a><a href="/evolve/guida" className="evolve-text-help">Come funziona Evolve? →</a></div>
   </div>
   <DailyCompanionClient/>
+  <TrainingIntelligenceClient mode="today"/>
   <GoalJourneyPanel mode="today"/>
   <section className="panel" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap',marginBottom:18}}>
    <div><p className="eyebrow">EVOLVE CORE · NOVITÀ 1.8</p><h2 className="text-lg font-bold">Ogni passo fa parte di un percorso.</h2><p className="muted text-sm">Allenamento, Piano, check-in e diario in una cronologia condivisa. Collega le evidenze al Coach solo quando lo scegli tu.</p></div>

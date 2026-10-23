@@ -1,3 +1,4 @@
+import '@/app/training-intelligence.css';
 import '@/app/goal-journey.css';
 import '@/app/training-editor.css';
 import {TrainingClient} from '@/components/training-client';

@@ -1,0 +1,36 @@
+/* Training Intelligence — additive styles, no changes to existing diary design. */
+.ti-root{display:grid;gap:14px;margin:16px 0 22px;padding:22px;border:1px solid #d6e8e8;border-radius:20px;background:#fff;min-width:0;max-width:100%;color:#17364e}
+.ti-root *{min-width:0;overflow-wrap:anywhere}
+.ti-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.ti-head h2{font-size:clamp(20px,2.5vw,26px);line-height:1.22;font-weight:800;margin:6px 0}
+.ti-head p{color:#577187;line-height:1.5}
+.ti-refresh{display:flex;align-items:center;gap:7px;border:1px solid #c4d8df;border-radius:10px;background:#fff;padding:9px 12px;min-height:44px;font-size:13px;font-weight:650}
+.ti-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ti-metrics>div{display:grid;gap:3px;border-radius:14px;background:#f1f7f8;padding:13px}
+.ti-metrics strong{font-size:clamp(20px,2vw,27px);line-height:1.2}
+.ti-metrics span{font-size:12px;color:#4e6474}
+.ti-next,.ti-review,.ti-form{padding:16px;border:1px solid #dce9ed;border-radius:15px;display:grid;gap:11px}
+.ti-next{background:#ecf8f6;border-color:#bfe4df}
+.ti-heading{display:flex;align-items:center;gap:9px;font-size:16px}
+.ti-heading svg{color:#087d82;flex-shrink:0}
+.ti-next p,.ti-review p,.ti-form p{margin:0;line-height:1.55;font-size:14px}
+.ti-form{background:#fbfdfd}
+.ti-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ti-fields label{display:grid;gap:5px;font-size:13px;font-weight:650}
+.ti-fields select{width:100%;min-height:44px;border:1px solid #c4d7df;background:#fff;border-radius:10px;padding:10px;color:#17364e}
+.ti-span{grid-column:1/-1}
+.ti-bottom{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.ti-bottom span,.ti-help{font-size:12px;color:#5c7486;line-height:1.55}
+.ti-help{display:flex;align-items:flex-start;gap:6px}
+.ti-bottom a,.ti-link{text-decoration:underline;text-underline-offset:3px;color:#08747a;font-weight:650}
+.ti-link{display:inline-flex;align-items:center;gap:7px;min-height:44px;width:fit-content;font-size:14px}
+.ti-activities{display:flex;flex-wrap:wrap;gap:7px}
+.ti-activities span{background:#edf5f6;border-radius:12px;padding:7px 10px;font-size:12px}
+.ti-alert{padding:11px;border-radius:10px;border:1px solid #e7d9b7;background:#fffaf0;font-size:13px}
+.ti-success{padding:11px;border-radius:10px;background:#edf8f4;color:#23674c;font-size:13px;display:flex;align-items:center;gap:8px}
+.ti-today{padding:15px;margin:14px 0}.ti-today .ti-head h2{font-size:19px}
+.ti-today .ti-next{padding:12px}.ti-today .ti-metrics strong{font-size:20px}
+@media(max-width:660px){.ti-root{padding:15px;margin:12px 0 18px}.ti-fields{grid-template-columns:minmax(0,1fr)}.ti-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ti-metrics>div:last-child{grid-column:1/-1}.ti-refresh{min-width:44px}}
+@media(max-width:360px){.ti-metrics{grid-template-columns:minmax(0,1fr)}.ti-metrics>div:last-child{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){.ti-root *{scroll-behavior:auto}}
+.ti-root .ti-bottom button{min-height:44px}

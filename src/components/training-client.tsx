@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {Activity,Dumbbell,Clock3,ChartNoAxesCombined,Edit3,Trash2,Save,X} from 'lucide-react';
 import {CoachCommitments} from '@/components/coach-commitments';
+import {TrainingIntelligenceClient} from '@/components/training-intelligence-client';
 import {ACTIVITIES,LABELS,estimateKcal,trainingSuggestion,type Activity as ActivityName} from '@/lib/training';
 import {apiUrl} from '@/lib/config';
 
@@ -113,6 +114,7 @@ export function TrainingClient(){
    <p className="eyebrow">Performance · Movimento</p><h1>Allenamento flessibile</h1>
    <p className="muted">Vogatore, kettlebell, camminata, sacco o qualsiasi attività. Registra, correggi e consulta quello che fai, senza duplicare le sessioni.</p>
   </div><Link className="btn-secondary" href="/giornata">Il piano di oggi →</Link></div>
+  <TrainingIntelligenceClient mode="training"/>
   <CoachCommitments section="training"/>
   <section className="v1-grid3">
    {[
