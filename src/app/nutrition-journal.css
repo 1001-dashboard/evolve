@@ -10,3 +10,26 @@
 @media(max-width:820px){.nj-columns{grid-template-columns:1fr}.nj-ideas{grid-template-columns:1fr 1fr}}@media(max-width:600px){.nj-card{padding:14px}.nj-grid{grid-template-columns:1fr}.nj-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.nj-metrics>div:last-child{grid-column:1/-1}.nj-ideas{grid-template-columns:1fr}.nj-panel{padding:14px}.nj-head h2{font-size:20px}}
 @media(max-width:340px){.nj-metrics{grid-template-columns:1fr}.nj-metrics>div:last-child{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.nj-card *{scroll-behavior:auto}}
+
+/* 1.9.3 — factual bridge between nutrition, workouts, Today and Vision 360 */
+.nj-bridge,.nj-beer-quick{border:1px solid #cddfe6;border-radius:15px;padding:14px;display:grid;gap:10px;background:#f6fafb;min-width:0}
+.nj-bridge-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px}
+.nj-bridge-title strong{font-size:15px}.nj-bridge-title span{font-size:12px;color:#587386}
+.nj-bridge-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.nj-bridge-metrics>span{display:block;padding:10px 12px;background:#fff;border:1px solid #dbe9ed;border-radius:11px;font-size:12px;color:#486376;line-height:1.5}
+.nj-bridge-metrics strong{font-size:18px;color:#15384b;margin-right:3px}
+.nj-bridge p,.nj-beer-quick p{font-size:12px;line-height:1.55;color:#486477;margin:0}
+.nj-bridge nav{display:flex;gap:12px;flex-wrap:wrap}
+.nj-bridge nav a{font-size:12px;text-decoration:underline;text-underline-offset:3px;color:#066f76;min-height:30px;display:inline-flex;align-items:center}
+.nj-bridge small,.nj-beer-quick small{font-size:11px;color:#607789;line-height:1.5}
+.nj-beer-quick{background:#fffbf3;border-color:#e7d8b9}
+.nj-beer-quick>div>strong{display:block;margin-bottom:3px;font-size:14px;color:#3b453c}
+.nj-beer-quick label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#495969;font-weight:650}
+.nj-beer-quick input{width:100px;border:1px solid #c9d6da;border-radius:9px;background:white;padding:9px;color:#173c4a}
+.nj-beer-actions{display:flex;flex-wrap:wrap;gap:10px}
+.nj-beer-actions button{border:1px solid #ddc592;border-radius:11px;background:#fff;color:#38454a;padding:11px 14px;min-height:46px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
+.nj-beer-actions button span{font-size:12px;font-weight:500;color:#657784}
+.nj-beer-actions button:focus-visible{outline:3px solid #05878a;outline-offset:2px}
+.nj-beer-actions button:disabled{opacity:.55;cursor:not-allowed}
+.nj-compact .nj-bridge-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:750px){.nj-bridge-metrics,.nj-compact .nj-bridge-metrics{grid-template-columns:1fr}.nj-beer-actions button{flex:1 1 130px;justify-content:center}}

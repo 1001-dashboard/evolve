@@ -2,11 +2,11 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {ArrowRight,CheckCircle2,ChevronDown,ClipboardList,Heart,Lightbulb,Pencil,RefreshCcw,Save,Trash2} from 'lucide-react';
 import {apiUrl,BASE_PATH} from '@/lib/config';
-import {hungerSuggestions,maintenanceEstimate,romeDate,summarizeFood,
+import {beerKcal,summarizeBeer,hungerSuggestions,maintenanceEstimate,romeDate,summarizeFood,
  type CalorieSource,type FoodEntry,type FoodSettings,type MaintenanceParams,type MealType} from '@/lib/nutrition-journal';
 
-type Payload={today:string;items:FoodEntry[];settings:FoodSettings;error?:string};
-type Mode='full'|'today'|'vision';
+type Payload={today:string;items:FoodEntry[];settings:FoodSettings;movement?:{sessions7:number;minutes7:number;sessionsToday:number;minutesToday:number}|null;checkin?:{energy:number;available_minutes:number}|null;notices?:string[];error?:string};
+type Mode='full'|'today'|'vision'|'training'|'diary';
 const MEALS:[MealType,string][]=[['colazione','Colazione'],['pranzo','Pranzo'],['cena','Cena'],['spuntino','Spuntino'],['altro','Altro']];
 const initialSettings:FoodSettings={daily_reference_kcal:null,avoided_foods:''};
 const samplePrefs:MaintenanceParams={age:0,heightCm:0,weightKg:0,equation:'plus5',activity:'leggera'};
@@ -21,6 +21,7 @@ export function NutritionJournalClient({mode}:{mode:Mode}){
  const [settings,setSettings]=useState<FoodSettings>(initialSettings),[meal,setMeal]=useState(initialMeal);
  const [editingId,setEditingId]=useState<string|null>(null),[consent,setConsent]=useState(false),[estimating,setEstimating]=useState(false);
  const [aiMessage,setAiMessage]=useState(''),[hunger,setHunger]=useState(false),[calculation,setCalculation]=useState(false);
+ const [beerRate,setBeerRate]=useState('43'),[beerLabel,setBeerLabel]=useState(false);
  const [numbers,setNumbers]=useState<MaintenanceParams>(samplePrefs),[calculationResult,setCalculationResult]=useState<ReturnType<typeof maintenanceEstimate>>(null);
  const load=useCallback(async()=>{
   const response=await fetch(apiUrl('/api/nutrition/journal'),{cache:'no-store'});
@@ -35,7 +36,15 @@ export function NutritionJournalClient({mode}:{mode:Mode}){
  },[load]);
  const summary=useMemo(()=>data?summarizeFood(data.items,data.today,data.settings.daily_reference_kcal):null,[data]);
  const todayEntries=useMemo(()=>data?.items.filter(e=>romeDate(e.eaten_at)===data.today)??[],[data]);
+ const editingBeer=Boolean(editingId&&data?.items.find(e=>e.id===editingId)?.entry_kind==='beer');
+ const beerToday=useMemo(()=>data?summarizeBeer(data.items,data.today):{count:0,kcalKnown:0},[data]);
  const hourInRome=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+ // Refresh the cross-domain snapshot when a session is edited or deleted on this same page.
+ useEffect(()=>{const refresh=()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Riepilogo non disponibile'));};
+  window.addEventListener('evolve:workout-changed',refresh);
+  window.addEventListener('evolve:checkin-changed',refresh);
+  return()=>{window.removeEventListener('evolve:workout-changed',refresh);window.removeEventListener('evolve:checkin-changed',refresh);};
+ },[load]);
  const reset=()=>{setMeal(initialMeal());setEditingId(null);setAiMessage('');};
  const setDescription=(description:string)=>{setMeal(v=>({...v,description,kcal:'',low:null,high:null,source:'non_disponibile'}));setAiMessage('');};
  const setKcal=(kcal:string)=>setMeal(v=>({...v,kcal,low:null,high:null,source:kcal.trim()? 'stima_personale':'non_disponibile'}));
@@ -64,7 +73,7 @@ export function NutritionJournalClient({mode}:{mode:Mode}){
      description:meal.description.trim(),kcal,kcal_low:kcal==null?null:meal.low,kcal_high:kcal==null?null:meal.high,
      calorie_source:kcal==null?'non_disponibile':meal.source,note:meal.note.trim()})});
    const json=await response.json();if(!response.ok)throw Error(json.error||'Non è stato possibile salvare.');
-   await load();reset();setNotice(editingId?'Pasto aggiornato e riepiloghi ricalcolati.':'Pasto registrato. Il riepilogo si aggiorna senza duplicazioni.');
+   await load();window.dispatchEvent(new Event('evolve:food-changed'));reset();setNotice(editingId?'Pasto aggiornato e riepiloghi ricalcolati.':'Pasto registrato. Il riepilogo si aggiorna senza duplicazioni.');
   }catch(e){setError(e instanceof Error?e.message:'Errore di salvataggio');}finally{setBusy(false)}
  }
  function editEntry(e:FoodEntry){setEditingId(e.id);setMeal({eatenAt:toLocal(e.eaten_at),mealType:e.meal_type,
@@ -78,8 +87,23 @@ export function NutritionJournalClient({mode}:{mode:Mode}){
   try{
    const response=await fetch(apiUrl('/api/nutrition/journal'),{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:entry.id})});
    const json=await response.json();if(!response.ok)throw Error(json.error||'Eliminazione non riuscita.');
-   if(editingId===entry.id)reset();await load();setNotice('Pasto eliminato; i riepiloghi ora escludono questa registrazione.');
+   if(editingId===entry.id)reset();await load();window.dispatchEvent(new Event('evolve:food-changed'));setNotice('Pasto eliminato; i riepiloghi ora escludono questa registrazione.');
   }catch(e){setError(e instanceof Error?e.message:'Errore di eliminazione');}finally{setBusy(false)}
+ }
+ async function addBeer(volumeMl:500|660){
+  if(busy||estimating)return;
+  const rate=Number(beerRate);
+  if(!Number.isFinite(rate)||rate<15||rate>120){setError('Inserisci un valore plausibile tra 15 e 120 kcal per 100 ml, oppure usa quello in etichetta.');return;}
+  setBusy(true);setError('');setNotice('');
+  try{
+   const response=await fetch(apiUrl('/api/nutrition/beer'),{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({volume_ml:volumeMl,kcal_per_100ml:rate,label_verified:beerLabel})});
+   const result=await response.json() as {error?:string;kcal?:number};
+   if(!response.ok)throw Error(result.error||'Registrazione non riuscita.');
+   await load();window.dispatchEvent(new Event('evolve:food-changed'));
+   setNotice(`Birra da ${volumeMl/10} cl registrata: circa ${result.kcal} kcal incluse nel totale di oggi. Puoi modificarla o eliminarla nel diario.`);
+  }catch(e){setError(e instanceof Error?e.message:'Errore durante la registrazione');}
+  finally{setBusy(false);}
  }
  async function saveSettings(e:React.FormEvent){e.preventDefault();if(busy)return;
   setBusy(true);setError('');setNotice('');
@@ -106,7 +130,29 @@ export function NutritionJournalClient({mode}:{mode:Mode}){
    </p>}
    {summary.reference==null&&<p className="nj-info">Per vedere una differenza giornaliera, configura prima un riferimento calorico personale nella sezione «Riferimento giornaliero e preferenze» più in basso. Non viene fissato automaticamente.</p>}
    {summary.count===0&&<p className="nj-info">Non ci sono pasti registrati oggi. Questo non significa che tu non abbia mangiato.</p>}
-   <div className="nj-hunger">
+   <div className="nj-bridge" aria-label="Mens sana in corpore sano, dati collegati">
+    <div className="nj-bridge-title"><strong>Mens sana in corpore sano</strong><span>Alimentazione e allenamento, una sola visione</span></div>
+    <div className="nj-bridge-metrics">
+     <span><strong>{data.movement?.sessions7??'—'}</strong> sessioni di allenamento registrate negli ultimi 7 giorni</span>
+     <span><strong>{data.movement?.minutes7??'—'}</strong> minuti di movimento registrati negli ultimi 7 giorni</span>
+     <span><strong>{beerToday.count}</strong> {beerToday.count===1?'birra registrata':'birre registrate'} oggi{beerToday.count>0?` · ~${format(beerToday.kcalKnown)} kcal già comprese nel totale`:''}</span>
+     <span><strong>{data.checkin?.energy??'—'}</strong> energia dichiarata nel check-in di oggi (scala 1–5)</span>
+    </div>
+    <p>Le attività registrate aiutano a leggere la settimana nel suo insieme. Evolve non sottrae calorie dell'allenamento al cibo e non presume che le registrazioni mancanti siano pasti saltati o inattività.</p>
+    <nav><a href={BASE_PATH+'/allenamento'}>Allenamento</a><a href={BASE_PATH+'/alimentazione'}>Alimentazione</a><a href={BASE_PATH+'/visione'}>Visione 360</a></nav>
+    {data.notices?.map(n=><small role="status" key={n}>{n}</small>)}
+   </div>
+   {(mode==='full'||mode==='today')&&<div className="nj-beer-quick" aria-label="Registrazione rapida birra">
+    <div><strong>Birretta · registrazione rapida</strong><p>Una pressione registra una birra già bevuta. Valore iniziale indicativo di una birra normale; usa l'etichetta per essere più preciso.</p></div>
+    <label>kcal per 100 ml <input type="number" min={15} max={120} step={1} inputMode="decimal" value={beerRate} onChange={e=>{setBeerRate(e.target.value);setBeerLabel(false)}}/></label>
+    <label><input type="checkbox" checked={beerLabel} onChange={e=>setBeerLabel(e.target.checked)}/> Valore verificato sull’etichetta</label>
+    <div className="nj-beer-actions">
+     {[500,660].map(ml=><button type="button" key={ml} disabled={busy||estimating||beerKcal(ml as 500|660,Number(beerRate))==null}
+      onClick={()=>void addBeer(ml as 500|660)}>+ Birra {ml/10} cl <span>~{beerKcal(ml as 500|660,Number(beerRate))??'—'} kcal</span></button>)}
+    </div>
+    <small>Le calorie dell'alcol non descrivono tutti i suoi effetti, incluso il recupero dopo l'attività fisica. Non sono un invito a bere.</small>
+   </div>}
+   {(mode==='full'||mode==='today')&&<div className="nj-hunger">
     <button type="button" className="nj-hunger-button" aria-expanded={hunger} onClick={()=>setHunger(x=>!x)}><Heart size={19}/> Ho fame <ChevronDown size={17}/></button>
     {hunger&&<div className="nj-hunger-content">
       <p><strong>Cosa ti andrebbe di mangiare?</strong> {todayEntries.length?`Oggi hai annotato ${todayEntries.length} ${todayEntries.length===1?'pasto':'pasti'}; queste idee sono un punto di partenza, non una valutazione completa.`:'Non risultano pasti annotati oggi, ma questo non significa che tu non abbia mangiato.'} Sono opzioni indicative, non una prescrizione. Le calorie residue non devono impedirti di mangiare se hai fame.</p>
@@ -116,32 +162,33 @@ export function NutritionJournalClient({mode}:{mode:Mode}){
       <a href={BASE_PATH+'/alimentazione#evolve-nutrition-form'}>Registra un pasto <ArrowRight size={15}/></a>
       <p className="nj-muted">Le idee tengono conto delle esclusioni che hai indicato, non di allergie o condizioni cliniche verificate. Controlla sempre gli ingredienti.</p>
     </div>}
-   </div>
+   </div>}
   </>}
  </>;
  if(mode!=='full'){
   if(!loading&&!data)return <section className="nj-card nj-compact" role="alert"><strong>Alimentazione non disponibile</strong><p>{error}</p></section>;
-  if(mode==='vision'&&data&&!todayEntries.length&&!data.settings.daily_reference_kcal)return null;
+  if(mode==='vision'&&data&&!todayEntries.length&&!data.settings.daily_reference_kcal&&!data.movement?.sessions7)return null;
   return <section className="nj-card nj-compact" aria-label="Alimentazione nel percorso">
-   <header className="nj-head"><div><p className="eyebrow">EVOLVE · ALIMENTAZIONE</p><h2>{mode==='today'?'Il tuo cibo, nella giornata':'Il diario nel percorso'}</h2></div>
+   <header className="nj-head"><div><p className="eyebrow">EVOLVE · ALIMENTAZIONE</p><h2>{mode==='today'?'Il tuo cibo, nella giornata':mode==='training'?'Cibo e movimento: il quadro insieme':mode==='diary'?'Le tue registrazioni alimentari':'Il diario nel percorso'}</h2></div>
     <a className="nj-inline-link" href={BASE_PATH+'/alimentazione'}>Apri diario <ArrowRight size={16}/></a></header>
    {body}
   </section>;
  }
  return <section className="nj-card nj-full" aria-label="Diario alimentare integrato">
-  <header className="nj-head"><div><p className="eyebrow">EVOLVE · NUTRITION INTELLIGENCE</p>
+  <header className="nj-head"><div><p className="eyebrow">EVOLVE · NUTRITION INTELLIGENCE · MENS SANA IN CORPORE SANO</p>
    <h2>Quello che mangi, non solo quello che pianifichi</h2>
    <p>Registra un pasto una volta: il riepilogo quotidiano e le altre schermate vedranno gli stessi dati.</p></div>
    <button type="button" className="btn-secondary" disabled={loading||busy} onClick={()=>void load().catch(e=>setError(e.message))}><RefreshCcw size={16}/> Aggiorna</button></header>
   {body}
   <div className="nj-columns">
    <form id="evolve-nutrition-form" className="nj-panel nj-editor" onSubmit={saveMeal}>
-    <h3>{editingId?'Modifica pasto registrato':'Che cosa hai mangiato?'}</h3>
+    <h3>{editingId?'Modifica registrazione':'Che cosa hai mangiato?'}</h3>
+    {editingBeer&&<p className="nj-info">Questa registrazione è una birra: puoi correggere orario, calorie e nota. Per cambiare da 50 a 66 cl, eliminala e usa di nuovo «Birretta».</p>}
     <div className="nj-grid">
      <label>Quando<input className="field" type="datetime-local" value={meal.eatenAt} onChange={e=>setMeal(v=>({...v,eatenAt:e.target.value}))} required/></label>
-     <label>Tipo di pasto<select className="field" value={meal.mealType} onChange={e=>setMeal(v=>({...v,mealType:e.target.value as MealType}))}>{MEALS.map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label>
+     <label>Tipo di pasto<select className="field" value={meal.mealType} disabled={editingBeer} onChange={e=>setMeal(v=>({...v,mealType:e.target.value as MealType}))}>{MEALS.map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label>
     </div>
-    <label>Descrivi alimenti e quantità, se le conosci<textarea className="field" required minLength={3} maxLength={600} rows={3} value={meal.description} onChange={e=>setDescription(e.target.value)} placeholder="Es. Pranzo: 100 g pasta (peso a crudo), pomodoro, un cucchiaio d’olio e una mela"/></label>
+    <label>Descrivi alimenti e quantità, se le conosci<textarea className="field" required minLength={3} maxLength={600} rows={3} value={meal.description} disabled={editingBeer} onChange={e=>setDescription(e.target.value)} placeholder="Es. Pranzo: 100 g pasta (peso a crudo), pomodoro, un cucchiaio d’olio e una mela"/></label>
     <div className="nj-estimate"><button type="button" className="btn-secondary" disabled={estimating||busy||!consent||meal.description.trim().length<3} onClick={()=>void calculateKcal()}><Lightbulb size={16}/>{estimating?'Sto stimando…':'Stima kcal con AI'}</button>
      <label className="nj-consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> Autorizzo a inviare questa descrizione al provider AI esterno per una stima indicativa. Le informazioni inviate potrebbero essere trattate secondo le condizioni del provider.</label>
     </div>

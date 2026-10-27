@@ -5,6 +5,7 @@ export type MealType='colazione'|'pranzo'|'cena'|'spuntino'|'altro';
 export type CalorieSource='etichetta'|'ai_stima'|'stima_personale'|'non_disponibile';
 export type FoodEntry={
  id:string;eaten_at:string;meal_type:MealType;description:string;
+ entry_kind?:'food'|'beer';beer_ml?:500|660|null;
  kcal:number|null;kcal_low:number|null;kcal_high:number|null;
  calorie_source:CalorieSource;note:string;
 };
@@ -66,3 +67,30 @@ export function hungerSuggestions(avoidedFood:string,limit=3,context:HungerConte
  return (mealMoment||context.lastLoggedMeal==='spuntino'?[ideas[ideas.length-1],...nonMeal]:[...nonMeal,ideas[ideas.length-1]]).slice(0,limit);
 }
 export function approx(n:number|null):string{return n==null?'—':Math.round(n).toLocaleString('it-IT')+' kcal';}
+
+/** Values for a regular beer are indicative. Use label kcal per 100 ml when known. */
+export const REGULAR_BEER_KCAL_PER_100ML=43;
+export function beerKcal(ml:500|660,kcalPer100ml:number=REGULAR_BEER_KCAL_PER_100ML):number|null{
+ if(![500,660].includes(ml)||!Number.isFinite(kcalPer100ml)||kcalPer100ml<15||kcalPer100ml>120)return null;
+ return Math.round(ml*kcalPer100ml/100);
+}
+export type MovementObservation={occurred_at:string;activity:string;duration_minutes:number};
+export type MovementSummary={sessions7:number;minutes7:number;sessionsToday:number;minutesToday:number};
+/** Descriptive only: observed activity does NOT add kcal to a person's daily food allowance. */
+export function summarizeMovement(rows:MovementObservation[],today:string):MovementSummary{
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return {sessions7:0,minutes7:0,sessionsToday:0,minutesToday:0};
+ const from=new Date(today+'T12:00:00Z');from.setUTCDate(from.getUTCDate()-6);
+ const first=from.toISOString().slice(0,10);
+ const valid=rows.filter(r=>{
+  const date=romeDate(r.occurred_at);
+  return date!=null&&date>=first&&date<=today&&Number.isFinite(Number(r.duration_minutes))&&Number(r.duration_minutes)>0;
+ });
+ const daily=valid.filter(x=>romeDate(x.occurred_at)===today);
+ const minutes=(v:MovementObservation[])=>Math.round(v.reduce((a,x)=>a+Number(x.duration_minutes),0));
+ return {sessions7:valid.length,minutes7:minutes(valid),sessionsToday:daily.length,minutesToday:minutes(daily)};
+}
+export type BeerSummary={count:number;kcalKnown:number};
+export function summarizeBeer(entries:FoodEntry[],today:string):BeerSummary{
+ const beers=entries.filter(e=>e.entry_kind==='beer'&&romeDate(e.eaten_at)===today);
+ return {count:beers.length,kcalKnown:Math.round(beers.reduce((a,e)=>a+(typeof e.kcal==='number'?e.kcal:0),0))};
+}

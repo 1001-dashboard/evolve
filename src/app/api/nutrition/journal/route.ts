@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server';
 import {z} from 'zod';
 import {serverSupabase} from '@/lib/supabase/server';
 import {romeDay} from '@/lib/programs';
+import {summarizeMovement} from '@/lib/nutrition-journal';
 
 export const dynamic='force-dynamic';
 const id=z.string().uuid();
@@ -32,12 +33,20 @@ function validTimestamp(s:string){const t=Date.parse(s);return Number.isFinite(t
 export async function GET(){
  const {sb,user}=await session();if(!user)return json({error:'Effettua l’accesso.'},401);
  const cutoff=new Date(Date.now()-36*86400000).toISOString();
- const [entries,preferences]=await Promise.all([
-  sb.from('evolve_food_entries').select('id,eaten_at,meal_type,description,kcal,kcal_low,kcal_high,calorie_source,note').eq('user_id',user.id).gte('eaten_at',cutoff).order('eaten_at',{ascending:false}).limit(300),
-  sb.from('evolve_nutrition_settings').select('daily_reference_kcal,avoided_foods').eq('user_id',user.id).maybeSingle()
+ const recent=new Date(Date.now()-8*86400000).toISOString();
+ const today=romeDay();
+ const [entries,preferences,training,checkin]=await Promise.all([
+  sb.from('evolve_food_entries').select('id,eaten_at,meal_type,description,kcal,kcal_low,kcal_high,calorie_source,note,entry_kind,beer_ml').eq('user_id',user.id).gte('eaten_at',cutoff).order('eaten_at',{ascending:false}).limit(300),
+  sb.from('evolve_nutrition_settings').select('daily_reference_kcal,avoided_foods').eq('user_id',user.id).maybeSingle(),
+  sb.from('evolve_workouts').select('occurred_at,activity,duration_minutes').eq('user_id',user.id).gte('occurred_at',recent).order('occurred_at',{ascending:false}).limit(100),
+  sb.from('evolve_daily_states').select('energy,available_minutes').eq('user_id',user.id).eq('day',today).maybeSingle()
  ]);
- if(entries.error||preferences.error)return json({error:'Diario alimentare non disponibile. Esegui la migrazione 202610270001_nutrition_journal.sql in Supabase.'},503);
- return json({today:romeDay(),items:entries.data??[],settings:preferences.data??{daily_reference_kcal:null,avoided_foods:''}});
+ if(entries.error||preferences.error)return json({error:'Diario alimentare non disponibile. Esegui le migrazioni 202610270001 e 202610270002 in Supabase.'},503);
+ const movement=training.error?null:summarizeMovement(training.data??[],today);
+ return json({today,items:entries.data??[],settings:preferences.data??{daily_reference_kcal:null,avoided_foods:''},
+  movement,checkin:checkin.error?null:(checkin.data??null),
+  notices:[...(training.error?['Storico Allenamento non disponibile: nessuna deduzione sul movimento.']:[]),
+    ...(checkin.error?['Check-in non disponibile: nessuna deduzione sull’energia.']:[])]});
 }
 export async function POST(req:NextRequest){
  const parsed=meal.safeParse(await req.json().catch(()=>null));if(!parsed.success||!validTimestamp(parsed.success?parsed.data.eaten_at:''))return json({error:'Controlla data, pasto e calorie indicate.'},400);
