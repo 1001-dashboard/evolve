@@ -1,2 +1,4 @@
-import { NutritionClient } from '@/components/nutrition-client';
-export default function AlimentazionePage(){return <NutritionClient/>;}
+import '@/app/nutrition-journal.css';
+import {NutritionJournalClient} from '@/components/nutrition-journal-client';
+import {NutritionClient} from '@/components/nutrition-client';
+export default function AlimentazionePage(){return <div className="nj-page"><NutritionJournalClient mode="full"/><details className="nj-tools"><summary>Ricette da ingredienti e analisi indicativa da foto</summary><div><p className="nj-info">Le ricette suggerite e le analisi delle foto non sono pasti consumati: per inserirle nel conteggio giornaliero, registra il pasto nel diario qui sopra e conferma quantità e kcal.</p><NutritionClient/></div></details></div>}

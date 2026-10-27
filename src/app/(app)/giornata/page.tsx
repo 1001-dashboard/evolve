@@ -1,3 +1,5 @@
+import '@/app/nutrition-journal.css';
+import {NutritionJournalClient} from '@/components/nutrition-journal-client';
 import '@/app/orchestrator.css';
 import '@/app/daily-companion.css';
 import '@/app/goal-journey.css';
@@ -39,6 +41,7 @@ export default async function Giornata(){
    <TrainingIntelligenceClient mode="today"/>
   </section>
   <section id="evolve-checkin"><TodayCheckinClient/></section>
+  <section id="evolve-alimentazione" aria-label="Diario alimentare e suggerimenti se hai fame"><NutritionJournalClient mode="today"/></section>
   <details className="today-focus-disclosure" id="evolve-coach">
    <summary><span className="today-focus-icon"><ClipboardList size={20}/></span><span><strong>Impegni concordati con il Coach</strong><small>Consulta le attività approvate e registra ciò che hai davvero svolto</small></span><ArrowRight size={18} className="today-chevron"/></summary>
    <div className="today-focus-detail"><DailyCompanionClient/></div>
