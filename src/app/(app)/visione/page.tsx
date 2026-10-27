@@ -1,3 +1,5 @@
+import '@/app/evolution-baseline.css';
+import {EvolutionBaselineClient} from '@/components/evolution-baseline-client';
 import '@/app/evolution-rolling-plan.css';
 import {EvolutionRollingPlanClient} from '@/components/evolution-rolling-plan-client';
 import '@/app/training-intelligence.css';
@@ -8,4 +10,4 @@ import '@/app/evolution.css';
 import '@/app/goal-journey.css';
 import {EvolutionOverviewClient} from '@/components/evolution-overview-client';
 import {GoalJourneyPanel} from '@/components/goal-journey-panel';
-export default function VisionePage(){return <><EvolutionRollingPlanClient mode="vision"/><GoalJourneyPanel mode="vision"/><TrainingIntelligenceClient mode="vision"/><NutritionJournalClient mode="vision"/><EvolutionOverviewClient/></>}
+export default function VisionePage(){return <><EvolutionBaselineClient mode="vision"/><EvolutionRollingPlanClient mode="vision"/><GoalJourneyPanel mode="vision"/><TrainingIntelligenceClient mode="vision"/><NutritionJournalClient mode="vision"/><EvolutionOverviewClient/></>}

@@ -94,3 +94,17 @@ export function summarizeBeer(entries:FoodEntry[],today:string):BeerSummary{
  const beers=entries.filter(e=>e.entry_kind==='beer'&&romeDate(e.eaten_at)===today);
  return {count:beers.length,kcalKnown:Math.round(beers.reduce((a,e)=>a+(typeof e.kcal==='number'?e.kcal:0),0))};
 }
+
+/** Last seven civil days: absent logs remain null, never "0 calories eaten". */
+export type FoodDayPoint={day:string;registered:number;kcalKnown:number|null;partial:boolean};
+export function foodWeek(entries:FoodEntry[],today:string):FoodDayPoint[]{
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(today))return [];
+ const d=new Date(today+'T12:00:00Z');if(!Number.isFinite(d.getTime())||d.toISOString().slice(0,10)!==today)return [];
+ const out:FoodDayPoint[]=[];
+ for(let i=6;i>=0;i--){
+  const x=new Date(d);x.setUTCDate(x.getUTCDate()-i);const day=x.toISOString().slice(0,10);
+  const summary=summarizeFood(entries,day,null);
+  out.push({day,registered:summary.count,kcalKnown:summary.knownCount>0?summary.estimatedTotal:null,partial:summary.partial});
+ }
+ return out;
+}

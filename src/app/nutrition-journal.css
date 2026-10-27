@@ -33,3 +33,6 @@
 .nj-beer-actions button:disabled{opacity:.55;cursor:not-allowed}
 .nj-compact .nj-bridge-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:750px){.nj-bridge-metrics,.nj-compact .nj-bridge-metrics{grid-template-columns:1fr}.nj-beer-actions button{flex:1 1 130px;justify-content:center}}
+
+/* Evolve 1.9.5 — visually distinct absent days in the observational food history. */
+.nj-food-week{padding:14px;border:1px solid #dce9ed;border-radius:13px;background:#fff}.nj-food-week>summary{cursor:pointer;font-weight:700}.nj-food-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:12px 0}.nj-food-day{display:grid;gap:4px;text-align:center;min-width:0}.nj-bar-box{height:100px;display:flex;align-items:end;justify-content:center;border-bottom:1px solid #b6c7d1}.nj-bar{width:min(100%,30px);background:#0b8f91;border-radius:5px 5px 0 0}.nj-no-data{margin:auto 0;color:#708295}.nj-food-day strong{font-size:12px}.nj-food-day small{font-size:10px;color:#52677a;overflow-wrap:anywhere}@media(max-width:540px){.nj-food-bars{gap:3px}.nj-food-day small{font-size:9px}.nj-bar-box{height:76px}}
