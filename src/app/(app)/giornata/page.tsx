@@ -1,3 +1,5 @@
+import '@/app/evolution-rolling-plan.css';
+import {EvolutionRollingPlanClient} from '@/components/evolution-rolling-plan-client';
 import '@/app/nutrition-journal.css';
 import {NutritionJournalClient} from '@/components/nutrition-journal-client';
 import '@/app/orchestrator.css';
@@ -37,6 +39,7 @@ export default async function Giornata(){
     <a href="#evolve-coach">Impegni concordati</a>
    </nav>
   </header>
+  <EvolutionRollingPlanClient mode="today"/>
   <section className="today-focus-primary" id="evolve-movimento" aria-label="Il prossimo passo e le evidenze del movimento">
    <TrainingIntelligenceClient mode="today"/>
   </section>
